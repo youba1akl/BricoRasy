@@ -1,5 +1,6 @@
-import 'package:bricorasy/screens/signin-screen.dart';
 import 'package:bricorasy/screens/signup-screen.dart';
+import 'package:bricorasy/screens/signin-screen.dart';
+import 'package:bricorasy/theme/theme.dart';
 import 'package:bricorasy/widgets/custom_scaffold.dart';
 import 'package:bricorasy/widgets/welcome_button.dart';
 import 'package:flutter/material.dart';
@@ -22,7 +23,7 @@ class Welcomescreen extends StatelessWidget {
                   text: const TextSpan(
                     children: [
                       TextSpan(
-                        text: 'Welcome Back!\n',
+                        text: 'Welcome Here!\n',
                         style: TextStyle(
                           fontSize: 45.0,
                           fontWeight: FontWeight.w600,
@@ -30,8 +31,11 @@ class Welcomescreen extends StatelessWidget {
                         ),
                       ),
                       TextSpan(
-                        text:
-                            '\nEnter personnal details to your employee account',
+                        text: '\nEnter your personal details in your',
+                        style: TextStyle(fontSize: 20.0, color: Colors.white),
+                      ),
+                      TextSpan(
+                        text: '\n account to find a job.',
                         style: TextStyle(fontSize: 20.0, color: Colors.white),
                       ),
                     ],
@@ -40,27 +44,27 @@ class Welcomescreen extends StatelessWidget {
               ),
             ),
           ),
-          const Flexible(
+          Flexible(
             flex: 1,
             child: Align(
               alignment: Alignment.bottomRight,
               child: Row(
                 children: [
-                  Expanded(
+                  const Expanded(
                     child: WelcomeButton(
                       buttonText: 'Sign In',
                       onTap: Signinscreen(),
                       color: Colors.transparent,
                       colorText: Colors.white,
-                    )
+                    ),
                   ),
                   Expanded(
                     child: WelcomeButton(
                       buttonText: 'Sign Up',
                       onTap: Signupscreen(),
-                      color:Colors.white ,
-                      colorText: Color(0xff335090),
-                    )
+                      color: Colors.white,
+                      colorText: lightColorScheme.primary,
+                    ),
                   ),
                 ],
               ),

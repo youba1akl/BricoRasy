@@ -1,5 +1,9 @@
+import 'package:bricorasy/screens/forget-screen.dart';
+import 'package:bricorasy/screens/signup-screen.dart';
+import 'package:bricorasy/theme/theme.dart';
 import 'package:bricorasy/widgets/custom_scaffold.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class Signinscreen extends StatefulWidget {
   const Signinscreen({super.key});
@@ -9,8 +13,324 @@ class Signinscreen extends StatefulWidget {
 }
 
 class _SigninscreenState extends State<Signinscreen> {
+  final _formSignUpKey = GlobalKey<FormState>();
+  bool rememberPassword = true;
   @override
   Widget build(BuildContext context) {
-    return const CustomScaffold(child: Text("Sign In",style: TextStyle(color: Colors.white)));
+    return CustomScaffold(
+      child: Column(
+        children: [
+          const Expanded(flex: 1, child: SizedBox(height: 10)),
+          Expanded(
+            flex: 7,
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(25.0, 50.0, 25.0, 20.0),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(40.0),
+                  topRight: Radius.circular(40.0),
+                ),
+              ),
+              child: SingleChildScrollView(
+                child: Form(
+                  key: _formSignUpKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Sign In',
+                        style: TextStyle(
+                          fontSize: 30.0,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 5.0),
+                      Text(
+                        'Hi, welcome back, you\'ve been missed',
+                        style: TextStyle(
+                          fontSize: 13.0,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black54,
+                        ),
+                      ),
+                      const SizedBox(height: 40.0),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Email',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 5.0),
+                          TextFormField(
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please entre Email';
+                              }
+                              return null;
+                            },
+                            decoration: InputDecoration(
+                              hintText: 'Enter Email',
+                              hintStyle: const TextStyle(color: Colors.black26),
+                              border: OutlineInputBorder(
+                                borderSide: const BorderSide(
+                                  color: Colors.black12,
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: const BorderSide(
+                                  color: Colors.black12,
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: const BorderSide(
+                                  color: Colors.black,
+                                  width: 1.5,
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10.0),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Password',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 5.0),
+                          TextFormField(
+                            obscureText: true,
+                            obscuringCharacter: '*',
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please entre Password';
+                              }
+                              return null;
+                            },
+                            decoration: InputDecoration(
+                              hintText: 'Enter Password',
+                              hintStyle: const TextStyle(color: Colors.black26),
+                              border: OutlineInputBorder(
+                                borderSide: const BorderSide(
+                                  color: Colors.black12,
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: const BorderSide(
+                                  color: Colors.black12,
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: const BorderSide(
+                                  color: Colors.black,
+                                  width: 1.5,
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Transform.scale(
+                                scale: .8,
+                                child: Checkbox(
+                                  value: rememberPassword,
+                                  onChanged: (bool? value) {
+                                    setState(() {
+                                      rememberPassword = value!;
+                                    });
+                                  },
+                                  activeColor: lightColorScheme.primary,
+                                ),
+                              ),
+                              const Text(
+                                'Remember me',
+                                style: TextStyle(
+                                  color: Colors.black45,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (e) => const Forgetscreen(),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: lightColorScheme.primary,
+                                    width: 2.0,
+                                  ),
+                                ),
+                              ),
+                              child: Text(
+                                'Forget password?',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: lightColorScheme.primary,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20.0),
+                      SizedBox(
+                        height: 45,
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            if (_formSignUpKey.currentState!.validate() &&
+                                rememberPassword) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Processing Data'),
+                                ),
+                              );
+                            } else if (!rememberPassword) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Please agree of the processing of personage',
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: lightColorScheme.primary,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                          child: const Text(
+                            'Sign In',
+                            style: TextStyle(fontSize: 20),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 40.0),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 75,
+                            child: Divider(
+                              thickness: 0.7,
+                              color: Colors.grey.withOpacity(0.5),
+                            ),
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(
+                              vertical: 0,
+                              horizontal: 10,
+                            ),
+                            child: Text(
+                              'Sign up with',
+                              style: TextStyle(color: Colors.black45),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 75,
+                            child: Divider(
+                              thickness: 0.7,
+                              color: Colors.grey.withOpacity(0.5),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 35.0),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          FaIcon(
+                            FontAwesomeIcons.facebookF,
+                            color: Colors.blue,
+                          ),
+                          const SizedBox(width: 60),
+                          Image.asset(
+                            'assets/images/logo-google.png',
+                            height: 20,
+                            width: 20,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 40.0),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'Don\'t have an account? ',
+                            style: TextStyle(color: Colors.black45),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (e) => const Signupscreen(),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(
+                                    color: lightColorScheme.primary,
+                                    width: 2.0,
+                                  ),
+                                ),
+                              ),
+                              child: Text(
+                                'Sign Up',
+                                style: TextStyle(
+                                  color: lightColorScheme.primary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
