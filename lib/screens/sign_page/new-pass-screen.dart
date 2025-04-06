@@ -1,16 +1,16 @@
-import 'package:bricorasy/screens/sign_page/verification-screen.dart';
 import 'package:bricorasy/theme/theme.dart';
 import 'package:bricorasy/widgets/custom_scaffold.dart';
+import 'package:bricorasy/widgets/home_scaffold.dart';
 import 'package:flutter/material.dart';
 
-class Forgetscreen extends StatefulWidget {
-  const Forgetscreen({super.key});
+class Newpassscreen extends StatefulWidget {
+  const Newpassscreen({super.key});
 
   @override
-  State<Forgetscreen> createState() => _ForgetscreenState();
+  State<Newpassscreen> createState() => _NewpassscreenState();
 }
 
-class _ForgetscreenState extends State<Forgetscreen> {
+class _NewpassscreenState extends State<Newpassscreen> {
   final _formSignUpKey = GlobalKey<FormState>();
   bool agree = true;
   @override
@@ -22,7 +22,7 @@ class _ForgetscreenState extends State<Forgetscreen> {
           Expanded(
             flex: 7,
             child: Container(
-              padding: const EdgeInsets.fromLTRB(25.0, 80.0, 25.0, 20.0),
+              padding: const EdgeInsets.fromLTRB(25.0, 50.0, 25.0, 20.0),
               decoration: const BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.only(
@@ -37,7 +37,7 @@ class _ForgetscreenState extends State<Forgetscreen> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        'Mail Address Here',
+                        'Enter New Password',
                         style: TextStyle(
                           fontSize: 30.0,
                           fontWeight: FontWeight.w900,
@@ -51,7 +51,7 @@ class _ForgetscreenState extends State<Forgetscreen> {
                           text: const TextSpan(
                             children: [
                               TextSpan(
-                                text: 'Enter the email address associoted\n',
+                                text: 'Your new password must be different\n',
                                 style: TextStyle(
                                   fontSize: 14.0,
                                   fontWeight: FontWeight.w600,
@@ -59,7 +59,7 @@ class _ForgetscreenState extends State<Forgetscreen> {
                                 ),
                               ),
                               TextSpan(
-                                text: 'with your account',
+                                text: 'from previously used password',
                                 style: TextStyle(
                                   fontSize: 14.0,
                                   color: Colors.black54,
@@ -70,12 +70,12 @@ class _ForgetscreenState extends State<Forgetscreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 40.0),
+                      const SizedBox(height: 35.0),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            'Email',
+                            'Password',
                             style: TextStyle(
                               fontSize: 14.0,
                               fontWeight: FontWeight.bold,
@@ -84,14 +84,16 @@ class _ForgetscreenState extends State<Forgetscreen> {
                           ),
                           const SizedBox(height: 5.0),
                           TextFormField(
+                            obscureText: true,
+                            obscuringCharacter: '*',
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please entre Email';
+                                return 'Please entre Password';
                               }
                               return null;
                             },
                             decoration: InputDecoration(
-                              hintText: 'Enter Email',
+                              hintText: 'Enter Password',
                               hintStyle: const TextStyle(color: Colors.black26),
                               border: OutlineInputBorder(
                                 borderSide: const BorderSide(
@@ -116,7 +118,55 @@ class _ForgetscreenState extends State<Forgetscreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 40.0),
+                      const SizedBox(height: 10.0),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Confirm Password',
+                            style: TextStyle(
+                              fontSize: 14.0,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
+                          const SizedBox(height: 5.0),
+                          TextFormField(
+                            obscureText: true,
+                            obscuringCharacter: '*',
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please entre Password';
+                              }
+                              return null;
+                            },
+                            decoration: InputDecoration(
+                              hintText: 'Confirm Password',
+                              hintStyle: const TextStyle(color: Colors.black26),
+                              border: OutlineInputBorder(
+                                borderSide: const BorderSide(
+                                  color: Colors.black12,
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: const BorderSide(
+                                  color: Colors.black12,
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: const BorderSide(
+                                  color: Colors.black,
+                                  width: 1.5,
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 30.0),
                       SizedBox(
                         height: 45,
                         width: double.infinity,
@@ -132,7 +182,7 @@ class _ForgetscreenState extends State<Forgetscreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (e) => Verificationscreen(),
+                                  builder: (e) => HomeScaffold(),
                                 ),
                               );
                             } else if (!agree) {
@@ -153,7 +203,7 @@ class _ForgetscreenState extends State<Forgetscreen> {
                             ),
                           ),
                           child: const Text(
-                            'Recover Password',
+                            'Continue',
                             style: TextStyle(fontSize: 20),
                           ),
                         ),

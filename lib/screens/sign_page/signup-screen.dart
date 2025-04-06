@@ -1,4 +1,6 @@
-import 'package:bricorasy/screens/sign_page/forget-screen.dart';
+import 'package:bricorasy/screens/sign_page/double-sign-screen.dart';
+import 'package:bricorasy/screens/sign_page/signin-screen.dart';
+import 'package:bricorasy/screens/sign_page/therme-screen.dart';
 import 'package:bricorasy/theme/theme.dart';
 import 'package:bricorasy/widgets/custom_scaffold.dart';
 import 'package:flutter/material.dart';
@@ -242,7 +244,7 @@ class _SignupscreenState extends State<Signupscreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (e) => const Forgetscreen(),
+                                  builder: (e) => const Thermescreen(),
                                 ),
                               );
                             },
@@ -278,6 +280,12 @@ class _SignupscreenState extends State<Signupscreen> {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text('Processing Data'),
+                                ),
+                              );
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (e) => Doublesignscreen(),
                                 ),
                               );
                             } else if (!agree) {
@@ -362,7 +370,7 @@ class _SignupscreenState extends State<Signupscreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (e) => const Signupscreen(),
+                                  builder: (e) => const Signinscreen(),
                                 ),
                               );
                             },
