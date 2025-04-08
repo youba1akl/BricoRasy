@@ -21,11 +21,11 @@ class _HomeScaffoldState extends State<HomeScaffold> {
   }
 
   final List<Widget> _pages = [
-    const Homescreen(),
-    const Artisantscreen(),
-    const AddAnnoScreen(),
-    const PersonnelScreen(),
-    const Profilscreen(),
+    Homescreen(),
+    Artisantscreen(),
+    AddAnnoScreen(),
+    PersonnelScreen(),
+    Profilscreen(),
   ];
 
   @override

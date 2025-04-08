@@ -6,10 +6,12 @@ class CustomContainerAnn extends StatefulWidget {
     this.title,
     this.description,
     this.localisation,
+    this.page,
   });
   final String? title;
   final String? description;
   final String? localisation;
+  final Widget? page;
 
   @override
   State<CustomContainerAnn> createState() => _CustomContainerAnnState();
@@ -102,7 +104,12 @@ class _CustomContainerAnnState extends State<CustomContainerAnn> {
             ),
             const SizedBox(width: 16),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => widget.page!),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 shape: CircleBorder(),
                 backgroundColor: const Color(0XFF7A8DB7),

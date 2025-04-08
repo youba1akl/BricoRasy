@@ -1,3 +1,5 @@
+import 'package:bricorasy/screens/home/bricole-screen.dart';
+import 'package:bricorasy/screens/home/pro-screen.dart';
 import 'package:bricorasy/widgets/custom_container_ann.dart';
 import 'package:bricorasy/widgets/nav_bar_home.dart';
 import 'package:bricorasy/widgets/searchBar.dart';
@@ -62,12 +64,14 @@ class Homescreen extends StatelessWidget {
                     description:
                         'je cherche a netoyer ma maison, si quelqu\'un est interesse',
                     localisation: 'Bejaia,Bejaia',
+                    page: Bricolescreen(),
                   ),
                   CustomContainerAnn(
                     title: 'Nettoyage Maison',
                     description:
                         'je cherche a netoyer maijosaioj oiisjoi édjiokédjoi djojikédjoi,k ioé&d  maison, si quelqu\'un est interesse',
                     localisation: 'Bejaia,Bejaia',
+                    page: Proscreen(),
                   ),
                 ],
               ),
