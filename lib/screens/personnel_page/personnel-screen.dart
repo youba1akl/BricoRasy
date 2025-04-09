@@ -1,3 +1,4 @@
+import 'package:bricorasy/widgets/message_custom.dart';
 import 'package:bricorasy/widgets/poste_custom.dart';
 import 'package:flutter/material.dart';
 
@@ -82,17 +83,38 @@ class _PersonnelScreenState extends State<PersonnelScreen> {
                   Expanded(
                     child: SingleChildScrollView(
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           if (currentView == 'messages') ...[
-                            PosteCustom(),
-                            PosteCustom(),
-                            PosteCustom(),
-                            PosteCustom(),
-                            PosteCustom(),
-                            PosteCustom(),
-                            PosteCustom(),
-                            PosteCustom(),
+                            const Text(
+                              'Messages',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            MessageCustom(),
+                            MessageCustom(),
+                            MessageCustom(),
+                            MessageCustom(),
+                            MessageCustom(),
+                            MessageCustom(),
+                            MessageCustom(),
+                            MessageCustom(),
+                            MessageCustom(),
+                            MessageCustom(),
+                            MessageCustom(),
+                            MessageCustom(),
                           ] else if (currentView == 'postes') ...[
+                            const Text(
+                              'Postes',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
                             PosteCustom(),
                             PosteCustom(),
                             PosteCustom(),
@@ -102,6 +124,14 @@ class _PersonnelScreenState extends State<PersonnelScreen> {
                             PosteCustom(),
                             PosteCustom(),
                           ] else if (currentView == 'annonces') ...[
+                            const Text(
+                              'Annonces',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
                             PosteCustom(),
                             PosteCustom(),
                             PosteCustom(),

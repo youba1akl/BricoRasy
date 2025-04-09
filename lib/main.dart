@@ -1,4 +1,4 @@
-import 'package:bricorasy/widgets/home_scaffold.dart';
+import 'package:bricorasy/screens/sign_page/welcome-screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -10,6 +10,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(debugShowCheckedModeBanner: false, home: HomeScaffold());
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Welcomescreen(),
+    );
   }
 }
