@@ -1,0 +1,16 @@
+
+{
+    "senderId": ObjectId("661a1b1b1b1b1b1b1b1b1b11"),
+    "receiverId": ObjectId("661a1b1b1b1b1b1b1b1b1b12"),
+    "text": "Hi Karim, is your sink repair offer still available?",
+    "timestamp": { "$date": "2025-04-13T15:45:00Z" },
+    "read": false
+  }
+  {
+    "senderId": ObjectId("661a1b1b1b1b1b1b1b1b1b12"),
+    "receiverId": ObjectId("661a1b1b1b1b1b1b1b1b1b11"),
+    "text": "Yes, I can pass by tomorrow morning.",
+    "timestamp": { "$date": "2025-04-13T15:47:00Z" },
+    "read": true
+  }
+    

@@ -1,0 +1,9 @@
+{
+    "userId": ObjectId("661a1b1b1b1b1b1b1b1b1b11"),
+    "code": "874923",
+    "type": "email",
+    "isUsed": false,
+    "expiresAt": { "$date": "2025-04-13T13:00:00Z" },
+    "createdAt": { "$date": "2025-04-13T12:00:00Z" }
+  }
+  

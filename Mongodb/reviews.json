@@ -1,0 +1,7 @@
+{
+  "clientId": ObjectId("661a1b1b1b1b1b1b1b1b1b11"),
+  "artisanId": ObjectId("661a1b1b1b1b1b1b1b1b1b12"),
+  "rating": 5,
+  "comment": "Karim was professional and quick! Highly recommend.",
+  "createdAt": { "$date": "2025-04-13T16:00:00Z" }
+}

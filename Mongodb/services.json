@@ -1,0 +1,21 @@
+{
+  "title": "Fix leaking kitchen sink",
+  "description": "Experienced plumber needed to fix leakage.",
+  "artisanId": ObjectId("661a1b1b1b1b1b1b1b1b1b12"),
+  "category": "Plumbing",
+  "price": 80,
+  "status": "available",
+  "location": "Lyon, France",
+  "createdAt": { "$date": "2025-04-12T08:00:00Z" }
+}
+{
+    "title": "Paint bedroom walls",
+    "description": "Need walls painted before the weekend.",
+    "artisanId": ObjectId("661a1b1b1b1b1b1b1b1b1b13"),
+    "category": "Painting",
+    "price": 150,
+    "status": "pending",
+    "location": "Marseille",
+    "createdAt": { "$date": "2025-04-10T14:00:00Z" }
+  }
+  

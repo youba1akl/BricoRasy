@@ -1,0 +1,22 @@
+{
+  "_id": ObjectId("661a1b1b1b1b1b1b1b1b1b11"),
+  "name": "Sophie Martin",
+  "email": "sophie.martin@gmail.com",
+  "password": "hashed_pw_123",
+  "role": "client",
+  "isVerified": true,
+  "phone": "+33612345678",
+  "createdAt": { "$date": "2025-04-13T12:00:00Z" }
+}
+{
+  "name": "Karim B.",
+  "email": "karim.artisan@gmail.com",
+  "password": "hashed_pw_456",
+  "role": "artisan",
+  "skills": ["plumbing", "renovation"],
+  "bio": "10 years of experience in home repairs.",
+  "rating": 4.7,
+  "profilePicture": "https://cdn.example.com/imgs/karim.jpg",
+  "isVerified": true,
+  "createdAt": { "$date": "2025-04-11T10:30:00Z" }
+}

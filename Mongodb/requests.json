@@ -1,0 +1,8 @@
+{
+    "userId": ObjectId("661a1b1b1b1b1b1b1b1b1b11"),
+    "serviceId": ObjectId("661a1c1c1c1c1c1c1c1c1c21"),
+    "status": "pending",
+    "message": "Can you come by Thursday morning?",
+    "createdAt": { "$date": "2025-04-12T10:15:00Z" }
+  }
+  
