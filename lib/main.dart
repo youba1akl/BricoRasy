@@ -1,3 +1,5 @@
+import 'package:bricorasy/screens/artisan/artisan-profil-screen.dart';
+import 'package:bricorasy/screens/artisan/comment-screen.dart';
 import 'package:bricorasy/screens/sign_page/welcome-screen.dart';
 import 'package:flutter/material.dart';
 
@@ -12,7 +14,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Welcomescreen(),
+      home: Commentscreen(),
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:bricorasy/screens/artisan/comment-screen.dart';
 import 'package:bricorasy/widgets/home_scaffold.dart';
 import 'package:flutter/material.dart';
 
@@ -77,7 +78,14 @@ class _PosteCustomState extends State<PosteCustom> {
                     Row(
                       children: [
                         GestureDetector(
-                          onTap: () {},
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Commentscreen(),
+                              ),
+                            );
+                          },
                           child: Icon(
                             Icons.mode_comment_outlined,
                             size: 25,
