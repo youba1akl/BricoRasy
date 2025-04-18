@@ -1,16 +1,19 @@
-# bricorasy
+# BricoRasy
 
-A new Flutter project.
+Our Licence project.
+Using Dart (Flutter), JS, MongoDB, ExpressJS & NodeJS...
 
-## Getting Started
+## Members
 
-This project is a starting point for a Flutter application.
+Sidali Alili
+Aklil Youba
+Rahim Amari
+Azedine Afkir
+Anis Aissani
 
-A few resources to get you started if this is your first Flutter project:
+### Objectives
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Making an app that provides services (bricoles) and help the "bricoleurs" gain publicity and work done.
+It provides the possibilty to rent & lend tools.
+It's an idea that's not available locally, a good oppotunity to learn and exploit the market.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
