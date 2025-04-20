@@ -121,6 +121,14 @@ class _AddAnnoOutilState extends State<AddAnnoOutil> {
                   SizedBox(height: 16),
                   TextFormField(
                     decoration: InputDecoration(
+                      labelText: "Duree de location",
+                      prefixIcon: Icon(Icons.timelapse),
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  SizedBox(height: 16),
+                  TextFormField(
+                    decoration: InputDecoration(
                       labelText: 'Description',
                       prefixIcon: Icon(Icons.description),
                       border: OutlineInputBorder(),
