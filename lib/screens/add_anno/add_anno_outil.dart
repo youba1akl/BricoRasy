@@ -1,21 +1,21 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-class AddAnnoProf extends StatefulWidget {
-  const AddAnnoProf({super.key});
+class AddAnnoOutil extends StatefulWidget {
+  const AddAnnoOutil({super.key});
 
   @override
-  State<AddAnnoProf> createState() => _AddAnnoProfState();
+  State<AddAnnoOutil> createState() => _AddAnnoOutilState();
 }
 
-class _AddAnnoProfState extends State<AddAnnoProf> {
+class _AddAnnoOutilState extends State<AddAnnoOutil> {
   final ImagePicker _picker = ImagePicker();
   List<XFile> _images = [];
   final List<String> type_tache = [
-    'Plombier',
-    'macon',
-    'jardinier',
+    'outil jardinnage',
+    'outil de construction',
     'Autre',
   ];
 
@@ -41,7 +41,7 @@ class _AddAnnoProfState extends State<AddAnnoProf> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Annonce professionnel"), centerTitle: true),
+      appBar: AppBar(title: Text("Location d'outils"), centerTitle: true),
 
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -95,7 +95,7 @@ class _AddAnnoProfState extends State<AddAnnoProf> {
                   SizedBox(height: 16),
                   DropdownButtonFormField<String>(
                     decoration: InputDecoration(
-                      labelText: "type",
+                      labelText: "categorie",
                       prefixIcon: Icon(Icons.category),
                       border: OutlineInputBorder(),
                     ),

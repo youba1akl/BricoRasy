@@ -1,4 +1,5 @@
 import 'package:bricorasy/screens/add_anno/add_anno_bricole.dart';
+import 'package:bricorasy/screens/add_anno/add_anno_outil.dart';
 import 'package:bricorasy/screens/add_anno/add_anno_prof.dart';
 import 'package:flutter/material.dart';
 
@@ -153,7 +154,14 @@ class _AddAnnoScreenState extends State<AddAnnoScreen> {
                   ),
                   Expanded(
                     child: GestureDetector(
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AddAnnoOutil(),
+                          ),
+                        );
+                      },
                       child: Container(
                         padding: EdgeInsets.all(10),
                         decoration: BoxDecoration(

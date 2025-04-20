@@ -9,7 +9,23 @@ class TaskFormScreen extends StatefulWidget {
 
 class _TaskFormScreenState extends State<TaskFormScreen> {
   final _formKey = GlobalKey<FormState>();
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2100),
+    );
 
+    if (picked != null) {
+      setState(() {
+        _dateController.text = "${picked.day}/${picked.month}/${picked.year}";
+      });
+    }
+  }
+
+  TextEditingController _dateController = TextEditingController();
+  TextEditingController _dateControllerFin = TextEditingController();
   final ImagePicker _picker = ImagePicker();
   List<XFile> _images = [];
 
@@ -30,6 +46,13 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     if (image != null) {
       setState(() => _images.add(image));
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _dateControllerFin.text = "";
+    _dateController.text = DateTime.now().toString().split(' ')[0];
   }
 
   @override
@@ -61,6 +84,28 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                             (value == null || value.isEmpty)
                                 ? 'veuillez remplir ce champ'
                                 : null,
+                  ),
+                  SizedBox(height: 16),
+                  TextFormField(
+                    controller: _dateController,
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      labelText: 'Date de creation',
+                      prefixIcon: Icon(Icons.calendar_today),
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  SizedBox(height: 16),
+                  TextFormField(
+                    controller: _dateControllerFin,
+
+                    decoration: InputDecoration(
+                      labelText: 'Date d\'expiration de l\'annonce',
+                      prefixIcon: Icon(Icons.calendar_today),
+                      border: OutlineInputBorder(),
+                    ),
+                    readOnly: true,
+                    onTap: () => _selectDate(context),
                   ),
                   SizedBox(height: 16),
                   DropdownButtonFormField<String>(
