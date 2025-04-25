@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
 
 class TaskFormScreen extends StatefulWidget {
   @override
@@ -26,6 +27,12 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
 
   TextEditingController _dateController = TextEditingController();
   TextEditingController _dateControllerFin = TextEditingController();
+
+  final _locationCtrl = TextEditingController();
+  final _titleCtrl = TextEditingController();
+  final _descriptionCtrl = TextEditingController();
+  final _priceCtrl = TextEditingController();
+
   final ImagePicker _picker = ImagePicker();
   List<XFile> _images = [];
 
@@ -33,8 +40,15 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     'Jardinage',
     'Décoration',
     'Nettoyage',
-    'Autre',
+    'Réparations diverses',
+    'Montage de meubles',
+    'Ménage à domicile',
+    'Déménagement',
+    'Transport de meubles'
+        'Autre',
   ];
+
+  String? _selectedType;
 
   Future<void> _pickImage() async {
     final XFile? image = await _picker.pickImage(
@@ -45,6 +59,43 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     );
     if (image != null) {
       setState(() => _images.add(image));
+    }
+  }
+
+  Future<void> _submitForm() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final uri = Uri.parse('http://<YOUR_SERVER_IP>:3000/api/annonces/bricole');
+    final req =
+        http.MultipartRequest('POST', uri)
+          ..fields['localisation'] = _locationCtrl.text
+          ..fields['titre'] = _titleCtrl.text
+          ..fields['description'] = _descriptionCtrl.text
+          ..fields['prix'] = _priceCtrl.text
+          ..fields['type_annonce'] = _selectedType!
+          ..fields['date_creation'] = _dateController.text
+          ..fields['date_expiration'] = _dateControllerFin.text;
+
+    for (var img in _images) {
+      req.files.add(await http.MultipartFile.fromPath('photo', img.path));
+    }
+
+    try {
+      final streamedResp = await req.send();
+      final resp = await http.Response.fromStream(streamedResp);
+
+      if (resp.statusCode == 201) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Annonce créée avec succès!')));
+        Navigator.pop(context);
+      } else {
+        throw Exception('Erreur: ${resp.body}');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
     }
   }
 
@@ -74,6 +125,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   TextFormField(
+                    controller: _locationCtrl,
                     decoration: InputDecoration(
                       labelText: 'Localisation',
                       prefixIcon: Icon(Icons.location_on),
@@ -124,10 +176,11 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                             )
                             .toList(),
 
-                    onChanged: (value) {},
+                    onChanged: (v) => setState(() => _selectedType = v),
                   ),
                   SizedBox(height: 16),
                   TextFormField(
+                    controller: _priceCtrl,
                     decoration: InputDecoration(
                       labelText: 'prix',
                       prefixIcon: Icon(Icons.attach_money),
@@ -137,6 +190,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                   ),
                   SizedBox(height: 16),
                   TextFormField(
+                    controller: _titleCtrl,
                     maxLines: 1,
                     decoration: InputDecoration(
                       labelText: "Titre de l\'annonce",
@@ -146,6 +200,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                   ),
                   SizedBox(height: 16),
                   TextFormField(
+                    controller: _descriptionCtrl,
                     decoration: InputDecoration(
                       labelText: 'Description',
                       prefixIcon: Icon(Icons.description),
@@ -188,7 +243,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                   SizedBox(height: 24),
 
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: _submitForm,
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
