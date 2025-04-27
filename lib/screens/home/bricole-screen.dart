@@ -43,7 +43,7 @@ final List<BricoleService> dummyServices = [
   ),
   BricoleService(
     name: "Électricien Certifié",
-    imagePath: 'assets/images/default2.png',
+    imagePath: 'assets/images/default02.png',
     rating: 4.9,
     numOfRating: 500,
     durationMinutes: 90,
@@ -52,7 +52,7 @@ final List<BricoleService> dummyServices = [
   ),
   BricoleService(
     name: "Peintre Décorateur",
-    imagePath: 'assets/images/default2.png',
+    imagePath: 'assets/images/default02.png',
     rating: 4.7,
     numOfRating: 210,
     durationMinutes: 180,
@@ -61,7 +61,7 @@ final List<BricoleService> dummyServices = [
   ),
   BricoleService(
     name: "Jardinier Paysagiste",
-    imagePath: 'assets/images/default2.png',
+    imagePath: 'assets/images/default02.png',
     rating: 4.6,
     numOfRating: 180,
     durationMinutes: 120,
@@ -338,6 +338,7 @@ class ServiceImageDisplay extends StatelessWidget {
 
 // --- Skeleton Loader Widgets (Same as before) ---
 class ServiceCardScalton extends StatelessWidget {
+  
   const ServiceCardScalton({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
@@ -393,29 +394,7 @@ class ScaltonLine extends StatelessWidget {
   }
 }
 
-class DotIndicator extends StatelessWidget {
-  const DotIndicator({
-    Key? key,
-    this.isActive = false,
-    this.activeColor = const Color(0xFF22A45D),
-    this.inActiveColor = const Color(0xFF868686),
-  }) : super(key: key);
-  final bool isActive;
-  final Color activeColor, inActiveColor;
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 250),
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      height: 5,
-      width: isActive ? 16 : 8,
-      decoration: BoxDecoration(
-        color: isActive ? activeColor : inActiveColor.withOpacity(0.25),
-        borderRadius: const BorderRadius.all(Radius.circular(20)),
-      ),
-    );
-  }
-}
+
 
 
 // --- Search Form Widget (Adapted to use Icon) ---
