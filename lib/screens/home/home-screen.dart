@@ -64,7 +64,7 @@ class Homescreen extends StatelessWidget {
                     description:
                         'je cherche a netoyer ma maison, si quelqu\'un est interesse',
                     localisation: 'Bejaia,Bejaia',
-                    page: Bricolescreen(),
+                    page: BricoleScreen(),
                   ),
                   CustomContainerAnn(
                     title: 'Nettoyage Maison',
