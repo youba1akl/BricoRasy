@@ -1,0 +1,30 @@
+{
+  "name": "bricorasy",
+  "version": "1.0.0",
+  "description": "A new Flutter project.",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "server": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/youba1akl/BricoRasy.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/youba1akl/BricoRasy/issues"
+  },
+  "homepage": "https://github.com/youba1akl/BricoRasy#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "mongoose": "^8.14.0",
+    "multer": "^1.4.5-lts.2"
+  }
+}

@@ -1,7 +1,7 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
 
 class AddAnnoOutil extends StatefulWidget {
   const AddAnnoOutil({super.key});
@@ -11,139 +11,219 @@ class AddAnnoOutil extends StatefulWidget {
 }
 
 class _AddAnnoOutilState extends State<AddAnnoOutil> {
-  final ImagePicker _picker = ImagePicker();
+  final _formKey = GlobalKey<FormState>();
+
+  // Controllers
+  final _locationCtrl = TextEditingController();
+  final _titleCtrl = TextEditingController();
+  final _priceCtrl = TextEditingController();
+  final _durationCtrl = TextEditingController();
+  final _descriptionCtrl = TextEditingController();
+  final _dateCtrl = TextEditingController();
+
+  String? _selectedCategory;
+  bool _submitting = false;
+
+  final _picker = ImagePicker();
   List<XFile> _images = [];
-  final List<String> type_tache = [
-    'outil jardinnage',
-    'outil de construction',
+
+  final List<String> _categories = [
+    'Outil jardinage',
+    'Outil construction',
     'Autre',
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    _dateCtrl.text = DateTime.now().toIso8601String().split('T')[0];
+  }
+
   Future<void> _pickImage() async {
-    final XFile? image = await _picker.pickImage(
+    final img = await _picker.pickImage(
       source: ImageSource.gallery,
       maxWidth: 800,
       maxHeight: 800,
       imageQuality: 80,
     );
-    if (image != null) {
-      setState(() => _images.add(image));
+    if (img != null) {
+      setState(() => _images.add(img));
     }
   }
 
-  TextEditingController _date = TextEditingController();
+  Future<void> _selectDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.parse(_dateCtrl.text),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null) {
+      setState(() => _dateCtrl.text = picked.toIso8601String().split('T')[0]);
+    }
+  }
 
-  @override
-  void initState() {
-    _date.text = DateTime.now().toString().split(' ')[0];
+  Future<void> _submitForm() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _submitting = true);
+
+    final uri = Uri.parse('http://10.0.2.2:8000/api/annonces/outil');
+    final req =
+        http.MultipartRequest('POST', uri)
+          ..fields['localisation'] = _locationCtrl.text
+          ..fields['titre'] = _titleCtrl.text
+          ..fields['type_annonce'] = _selectedCategory!
+          ..fields['prix'] = _priceCtrl.text
+          ..fields['duree_location'] = _durationCtrl.text
+          ..fields['description'] = _descriptionCtrl.text
+          ..fields['date_creation'] = _dateCtrl.text;
+
+    for (var img in _images) {
+      req.files.add(await http.MultipartFile.fromPath('photo', img.path));
+    }
+
+    try {
+      final streamed = await req.send();
+      final res = await http.Response.fromStream(streamed);
+
+      if (res.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Annonce créée avec succès!')),
+        );
+        Navigator.pop(context);
+      } else {
+        throw Exception('Erreur serveur: ${res.body}');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Échec de la soumission : ${e.toString()}')),
+      );
+    } finally {
+      setState(() => _submitting = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Location d'outils"), centerTitle: true),
-
+      appBar: AppBar(title: const Text("Location d'outils"), centerTitle: true),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Card(
           elevation: 4,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           child: Padding(
-            padding: EdgeInsets.all(16),
-
+            padding: const EdgeInsets.all(16),
             child: Form(
+              key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  // Location
                   TextFormField(
-                    decoration: InputDecoration(
+                    controller: _locationCtrl,
+                    decoration: const InputDecoration(
                       labelText: "Localisation",
                       prefixIcon: Icon(Icons.location_on),
                       border: OutlineInputBorder(),
                     ),
-                    validator:
-                        (value) =>
-                            (value == null || value.isEmpty)
-                                ? "veuillez saisir les champs"
-                                : null,
+                    validator: (v) => v!.isEmpty ? "Obligatoire" : null,
                   ),
-                  SizedBox(height: 16),
-                  TextFormField(
-                    controller: _date,
-                    readOnly: true,
-                    decoration: InputDecoration(
-                      labelText: 'Date de creation',
-                      prefixIcon: Icon(Icons.calendar_today),
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
+                  // Title
                   TextFormField(
-                    decoration: InputDecoration(
-                      labelText: "titre de l'annonce",
+                    controller: _titleCtrl,
+                    decoration: const InputDecoration(
+                      labelText: "Titre",
                       prefixIcon: Icon(Icons.title),
                       border: OutlineInputBorder(),
                     ),
-                    validator:
-                        (value) =>
-                            (value == null || value.isEmpty)
-                                ? "veillez remplir ce champs"
-                                : null,
+                    validator: (v) => v!.isEmpty ? "Obligatoire" : null,
                   ),
+                  const SizedBox(height: 16),
 
-                  SizedBox(height: 16),
+                  // Category
                   DropdownButtonFormField<String>(
-                    decoration: InputDecoration(
-                      labelText: "categorie",
+                    decoration: const InputDecoration(
+                      labelText: "Catégorie",
                       prefixIcon: Icon(Icons.category),
                       border: OutlineInputBorder(),
                     ),
                     items:
-                        type_tache
+                        _categories
                             .map(
-                              (type) => DropdownMenuItem(
-                                value: type,
-                                child: Text(type),
-                              ),
+                              (c) => DropdownMenuItem(value: c, child: Text(c)),
                             )
                             .toList(),
-                    onChanged: (value) {},
+                    onChanged: (v) => setState(() => _selectedCategory = v),
+                    validator:
+                        (v) => v == null ? "Choisissez une catégorie" : null,
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
+
+                  // Price
                   TextFormField(
-                    decoration: InputDecoration(
-                      labelText: "prix",
+                    controller: _priceCtrl,
+                    decoration: const InputDecoration(
+                      labelText: "Prix (€)",
                       prefixIcon: Icon(Icons.attach_money),
                       border: OutlineInputBorder(),
                     ),
+                    keyboardType: TextInputType.number,
+                    validator: (v) => v!.isEmpty ? "Obligatoire" : null,
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
+
+                  // Duration
                   TextFormField(
-                    decoration: InputDecoration(
-                      labelText: "Duree de location",
+                    controller: _durationCtrl,
+                    decoration: const InputDecoration(
+                      labelText: "Durée de location (jours)",
                       prefixIcon: Icon(Icons.timelapse),
                       border: OutlineInputBorder(),
                     ),
+                    keyboardType: TextInputType.number,
+                    validator: (v) => v!.isEmpty ? "Obligatoire" : null,
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
+
+                  // Description
                   TextFormField(
-                    decoration: InputDecoration(
+                    controller: _descriptionCtrl,
+                    decoration: const InputDecoration(
                       labelText: 'Description',
                       prefixIcon: Icon(Icons.description),
                       border: OutlineInputBorder(),
                     ),
                     maxLines: 3,
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
+
+                  // Date
+                  TextFormField(
+                    controller: _dateCtrl,
+                    readOnly: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Date de création',
+                      prefixIcon: Icon(Icons.calendar_today),
+                      border: OutlineInputBorder(),
+                    ),
+                    onTap: _selectDate,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Images
                   Text('Images', style: Theme.of(context).textTheme.titleSmall),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      ..._images.map(
-                        (img) => ClipRRect(
+                      for (var img in _images)
+                        ClipRRect(
                           borderRadius: BorderRadius.circular(8),
                           child: Image.file(
                             File(img.path),
@@ -152,35 +232,30 @@ class _AddAnnoOutilState extends State<AddAnnoOutil> {
                             fit: BoxFit.cover,
                           ),
                         ),
-                      ),
-                      GestureDetector(
-                        onTap: _pickImage,
-                        child: Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.grey),
-                          ),
-                          child: Icon(Icons.add_a_photo),
-                        ),
+                      IconButton(
+                        icon: const Icon(Icons.add_a_photo),
+                        onPressed: _pickImage,
                       ),
                     ],
                   ),
+                  const SizedBox(height: 24),
 
-                  SizedBox(height: 24),
-
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      elevation: 4,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                  // Submit
+                  _submitting
+                      ? const Center(child: CircularProgressIndicator())
+                      : ElevatedButton(
+                        onPressed: _submitForm,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text(
+                          'Créer',
+                          style: TextStyle(fontSize: 16),
+                        ),
                       ),
-                    ),
-                    child: Text('Creer', style: TextStyle(fontSize: 16)),
-                  ),
                 ],
               ),
             ),

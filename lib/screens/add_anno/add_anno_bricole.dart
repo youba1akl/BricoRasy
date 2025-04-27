@@ -10,120 +10,118 @@ class TaskFormScreen extends StatefulWidget {
 
 class _TaskFormScreenState extends State<TaskFormScreen> {
   final _formKey = GlobalKey<FormState>();
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2100),
-    );
-
-    if (picked != null) {
-      setState(() {
-        _dateController.text = "${picked.day}/${picked.month}/${picked.year}";
-      });
-    }
-  }
-
-  TextEditingController _dateController = TextEditingController();
-  TextEditingController _dateControllerFin = TextEditingController();
-
   final _locationCtrl = TextEditingController();
   final _titleCtrl = TextEditingController();
   final _descriptionCtrl = TextEditingController();
   final _priceCtrl = TextEditingController();
+  final _dateStartCtrl = TextEditingController();
+  final _dateEndCtrl = TextEditingController();
 
-  final ImagePicker _picker = ImagePicker();
+  final _picker = ImagePicker();
   List<XFile> _images = [];
+
+  bool _submitting = false;
+  String? _selectedType;
 
   final List<String> _taskTypes = [
     'Jardinage',
     'Décoration',
     'Nettoyage',
-    'Réparations diverses',
-    'Montage de meubles',
-    'Ménage à domicile',
+    'Réparations',
+    'Montage meubles',
+    'Ménage',
     'Déménagement',
-    'Transport de meubles'
-        'Autre',
+    'Transport',
+    'Autre',
   ];
 
-  String? _selectedType;
+  @override
+  void initState() {
+    super.initState();
+    _dateStartCtrl.text = DateTime.now().toIso8601String().split('T')[0];
+  }
+
+  Future<void> _selectDate(TextEditingController ctrl) async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null) {
+      ctrl.text = picked.toIso8601String().split('T')[0];
+    }
+  }
 
   Future<void> _pickImage() async {
-    final XFile? image = await _picker.pickImage(
+    final img = await _picker.pickImage(
       source: ImageSource.gallery,
       maxWidth: 800,
       maxHeight: 800,
       imageQuality: 80,
     );
-    if (image != null) {
-      setState(() => _images.add(image));
-    }
+    if (img != null) setState(() => _images.add(img));
   }
 
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
+    setState(() => _submitting = true);
 
-    final uri = Uri.parse('http://<YOUR_SERVER_IP>:3000/api/annonces/bricole');
+    final uri = Uri.parse('http://10.0.2.2:8000/api/annonces/bricole');
     final req =
         http.MultipartRequest('POST', uri)
           ..fields['localisation'] = _locationCtrl.text
           ..fields['titre'] = _titleCtrl.text
-          ..fields['description'] = _descriptionCtrl.text
-          ..fields['prix'] = _priceCtrl.text
           ..fields['type_annonce'] = _selectedType!
-          ..fields['date_creation'] = _dateController.text
-          ..fields['date_expiration'] = _dateControllerFin.text;
+          ..fields['prix'] = _priceCtrl.text
+          ..fields['description'] = _descriptionCtrl.text
+          ..fields['date_creation'] = _dateStartCtrl.text
+          ..fields['date_expiration'] = _dateEndCtrl.text;
 
     for (var img in _images) {
       req.files.add(await http.MultipartFile.fromPath('photo', img.path));
     }
 
     try {
-      final streamedResp = await req.send();
-      final resp = await http.Response.fromStream(streamedResp);
+      final streamed = await req.send();
+      final res = await http.Response.fromStream(streamed);
 
-      if (resp.statusCode == 201) {
+      if (res.statusCode == 201) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Annonce créée avec succès!')));
         Navigator.pop(context);
       } else {
-        throw Exception('Erreur: ${resp.body}');
+        throw Exception('Erreur: ${res.body}');
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.toString())));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Échec de la soumission : ${e.toString()}')),
+      );
+    } finally {
+      setState(() => _submitting = false);
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _dateControllerFin.text = "";
-    _dateController.text = DateTime.now().toString().split(' ')[0];
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Creer une annonce'), centerTitle: true),
+      appBar: AppBar(title: Text('Créer une annonce'), centerTitle: true),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Card(
           elevation: 4,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16),
             child: Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  // Location
                   TextFormField(
                     controller: _locationCtrl,
                     decoration: InputDecoration(
@@ -131,35 +129,23 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                       prefixIcon: Icon(Icons.location_on),
                       border: OutlineInputBorder(),
                     ),
-                    validator:
-                        (value) =>
-                            (value == null || value.isEmpty)
-                                ? 'veuillez remplir ce champ'
-                                : null,
+                    validator: (v) => v!.isEmpty ? 'Obligatoire' : null,
                   ),
                   SizedBox(height: 16),
-                  TextFormField(
-                    controller: _dateController,
-                    readOnly: true,
-                    decoration: InputDecoration(
-                      labelText: 'Date de creation',
-                      prefixIcon: Icon(Icons.calendar_today),
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  TextFormField(
-                    controller: _dateControllerFin,
 
+                  // Title
+                  TextFormField(
+                    controller: _titleCtrl,
                     decoration: InputDecoration(
-                      labelText: 'Date d\'expiration de l\'annonce',
-                      prefixIcon: Icon(Icons.calendar_today),
+                      labelText: 'Titre',
+                      prefixIcon: Icon(Icons.title),
                       border: OutlineInputBorder(),
                     ),
-                    readOnly: true,
-                    onTap: () => _selectDate(context),
+                    validator: (v) => v!.isEmpty ? 'Obligatoire' : null,
                   ),
                   SizedBox(height: 16),
+
+                  // Type
                   DropdownButtonFormField<String>(
                     decoration: InputDecoration(
                       labelText: 'Type',
@@ -169,36 +155,28 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                     items:
                         _taskTypes
                             .map(
-                              (type) => DropdownMenuItem(
-                                value: type,
-                                child: Text(type),
-                              ),
+                              (t) => DropdownMenuItem(value: t, child: Text(t)),
                             )
                             .toList(),
-
                     onChanged: (v) => setState(() => _selectedType = v),
+                    validator: (v) => v == null ? 'Choisissez un type' : null,
                   ),
                   SizedBox(height: 16),
+
+                  // Price
                   TextFormField(
                     controller: _priceCtrl,
                     decoration: InputDecoration(
-                      labelText: 'prix',
+                      labelText: 'Prix (€)',
                       prefixIcon: Icon(Icons.attach_money),
                       border: OutlineInputBorder(),
                     ),
                     keyboardType: TextInputType.number,
+                    validator: (v) => v!.isEmpty ? 'Obligatoire' : null,
                   ),
                   SizedBox(height: 16),
-                  TextFormField(
-                    controller: _titleCtrl,
-                    maxLines: 1,
-                    decoration: InputDecoration(
-                      labelText: "Titre de l\'annonce",
-                      prefixIcon: Icon(Icons.title),
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  SizedBox(height: 16),
+
+                  // Description
                   TextFormField(
                     controller: _descriptionCtrl,
                     decoration: InputDecoration(
@@ -209,6 +187,35 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                     maxLines: 3,
                   ),
                   SizedBox(height: 16),
+
+                  // Creation Date
+                  TextFormField(
+                    controller: _dateStartCtrl,
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      labelText: 'Date de création',
+                      prefixIcon: Icon(Icons.calendar_today),
+                      border: OutlineInputBorder(),
+                    ),
+                    onTap: () => _selectDate(_dateStartCtrl),
+                  ),
+                  SizedBox(height: 16),
+
+                  // Expiration Date
+                  TextFormField(
+                    controller: _dateEndCtrl,
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      labelText: 'Date d\'expiration',
+                      prefixIcon: Icon(Icons.calendar_today),
+                      border: OutlineInputBorder(),
+                    ),
+                    onTap: () => _selectDate(_dateEndCtrl),
+                    validator: (v) => v!.isEmpty ? 'Obligatoire' : null,
+                  ),
+                  SizedBox(height: 16),
+
+                  // Images
                   Text('Images', style: Theme.of(context).textTheme.titleSmall),
                   SizedBox(height: 8),
                   Wrap(
@@ -226,32 +233,27 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                           ),
                         ),
                       ),
-                      GestureDetector(
-                        onTap: _pickImage,
-                        child: Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.grey),
-                          ),
-                          child: Icon(Icons.add_a_photo),
-                        ),
+                      IconButton(
+                        icon: Icon(Icons.add_a_photo),
+                        onPressed: _pickImage,
                       ),
                     ],
                   ),
                   SizedBox(height: 24),
 
-                  ElevatedButton(
-                    onPressed: _submitForm,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                  // Submit
+                  _submitting
+                      ? Center(child: CircularProgressIndicator())
+                      : ElevatedButton(
+                        onPressed: _submitForm,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: Text('Créer', style: TextStyle(fontSize: 16)),
                       ),
-                    ),
-                    child: Text('Creer', style: TextStyle(fontSize: 16)),
-                  ),
                 ],
               ),
             ),
