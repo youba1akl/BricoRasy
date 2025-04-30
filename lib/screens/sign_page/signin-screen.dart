@@ -1,8 +1,9 @@
-import 'package:bricorasy/screens/sign_page/forget-screen.dart';
-import 'package:bricorasy/screens/sign_page/signup-screen.dart';
-import 'package:bricorasy/theme/theme.dart';
-import 'package:bricorasy/widgets/custom_scaffold.dart';
-import 'package:bricorasy/widgets/home_scaffold.dart';
+import 'package:bricorasy/screens/sign_page/profil-choice.dart';
+import 'package:bricorasy/services/auth_services.dart';
+import 'forget-screen.dart';
+import '../../theme/theme.dart';
+import '../../widgets/custom_scaffold.dart';
+import '../../widgets/home_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -16,6 +17,9 @@ class Signinscreen extends StatefulWidget {
 class _SigninscreenState extends State<Signinscreen> {
   final _formSignUpKey = GlobalKey<FormState>();
   bool rememberPassword = true;
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
@@ -39,7 +43,7 @@ class _SigninscreenState extends State<Signinscreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text(
+                      const Text(
                         'Sign In',
                         style: TextStyle(
                           fontSize: 30.0,
@@ -48,7 +52,7 @@ class _SigninscreenState extends State<Signinscreen> {
                         ),
                       ),
                       const SizedBox(height: 5.0),
-                      Text(
+                      const Text(
                         'Hi, welcome back, you\'ve been missed',
                         style: TextStyle(
                           fontSize: 13.0,
@@ -69,6 +73,7 @@ class _SigninscreenState extends State<Signinscreen> {
                           ),
                           const SizedBox(height: 5.0),
                           TextFormField(
+                            controller: emailController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Please entre Email';
@@ -114,6 +119,7 @@ class _SigninscreenState extends State<Signinscreen> {
                           ),
                           const SizedBox(height: 5.0),
                           TextFormField(
+                            controller: passwordController,
                             obscureText: true,
                             obscuringCharacter: '*',
                             validator: (value) {
@@ -210,28 +216,33 @@ class _SigninscreenState extends State<Signinscreen> {
                         height: 45,
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () {
-                            if (_formSignUpKey.currentState!.validate() &&
-                                rememberPassword) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Processing Data'),
-                                ),
+                          onPressed: () async {
+                            if (_formSignUpKey.currentState!.validate()) {
+                              // Appelle la fonction login
+                              final result = await AuthService.loginUser(
+                                emailController.text,
+                                passwordController.text,
                               );
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => HomeScaffold(),
-                                ),
-                              );
-                            } else if (!rememberPassword) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Please agree of the processing of personage',
+
+                              if (result['success']) {
+                                // Connexion réussie 🎯
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Connexion réussie')),
+                                );
+
+                                // Tu peux naviguer vers HomeScaffold
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => HomeScaffold(),
                                   ),
-                                ),
-                              );
+                                );
+                              } else {
+                                // Erreur dans la connexion 🚨
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(result['message'])),
+                                );
+                              }
                             }
                           },
                           style: ElevatedButton.styleFrom(
@@ -306,7 +317,7 @@ class _SigninscreenState extends State<Signinscreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (e) => const Signupscreen(),
+                                  builder: (e) => Profilchoice(),
                                 ),
                               );
                             },

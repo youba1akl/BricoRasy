@@ -1,9 +1,11 @@
-import 'package:bricorasy/screens/artisan/comment-screen.dart';
-import 'package:bricorasy/widgets/home_scaffold.dart';
+import '../screens/artisan/comment-screen.dart';
 import 'package:flutter/material.dart';
 
 class PosteCustom extends StatefulWidget {
-  const PosteCustom({super.key});
+  const PosteCustom({super.key, this.img, this.aime, this.comment});
+  final Image? img;
+  final String? aime;
+  final String? comment;
 
   @override
   State<PosteCustom> createState() => _PosteCustomState();
@@ -32,12 +34,7 @@ class _PosteCustomState extends State<PosteCustom> {
       child: Column(
         children: [
           GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => HomeScaffold()),
-              );
-            },
+            onTap: () {},
             child: Container(
               height: 190,
               width: double.infinity,
@@ -47,7 +44,9 @@ class _PosteCustomState extends State<PosteCustom> {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(7),
-                child: Image.asset('assets/images/work.png', fit: BoxFit.cover),
+                child:
+                    widget.img ??
+                    Image.asset('assets/images/E01.png', fit: BoxFit.cover),
               ),
             ),
           ),
@@ -71,7 +70,10 @@ class _PosteCustomState extends State<PosteCustom> {
                           ),
                         ),
                         SizedBox(width: 3),
-                        Text('59', style: TextStyle(color: Colors.white)),
+                        Text(
+                          widget.aime!,
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ],
                     ),
                     SizedBox(width: 10),
@@ -82,7 +84,11 @@ class _PosteCustomState extends State<PosteCustom> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => Commentscreen(),
+                                builder:
+                                    (context) => Commentscreen(
+                                      like: '30',
+                                      comment: '23',
+                                    ),
                               ),
                             );
                           },
@@ -93,7 +99,10 @@ class _PosteCustomState extends State<PosteCustom> {
                           ),
                         ),
                         SizedBox(width: 3),
-                        Text('20', style: TextStyle(color: Colors.white)),
+                        Text(
+                          widget.comment!,
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ],
                     ),
                     SizedBox(width: 7),

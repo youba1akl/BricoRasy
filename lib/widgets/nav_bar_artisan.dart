@@ -21,7 +21,7 @@ class _NavBarArtisanState extends State<NavBarArtisan> {
     return Container(
       height: 45,
       width: double.infinity,
-      margin: EdgeInsets.only(top: 0, bottom: 10, left: 10, right: 10),
+      margin: EdgeInsets.only(top: 10, bottom: 5, left: 5, right: 5),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(10),
         child: Theme(
@@ -30,7 +30,7 @@ class _NavBarArtisanState extends State<NavBarArtisan> {
             highlightColor: Colors.transparent,
           ),
           child: BottomNavigationBar(
-            backgroundColor: const Color(0XFF999999),
+            backgroundColor: const Color(0XFFDADDDB),
             type: BottomNavigationBarType.fixed,
             iconSize: 0,
             selectedFontSize: 0,
@@ -46,7 +46,7 @@ class _NavBarArtisanState extends State<NavBarArtisan> {
                   decoration: BoxDecoration(
                     color:
                         _selectedIndex == 0
-                            ? Color(0XFFBFBFBF)
+                            ? Color(0XFFECEEED)
                             : Colors.transparent,
                     borderRadius: BorderRadius.circular(7),
                   ),
@@ -76,7 +76,7 @@ class _NavBarArtisanState extends State<NavBarArtisan> {
                   decoration: BoxDecoration(
                     color:
                         _selectedIndex == 1
-                            ? Color(0XFFBFBFBF)
+                            ? Color(0XFFECEEED)
                             : Colors.transparent,
                     borderRadius: BorderRadius.circular(7),
                   ),
@@ -107,7 +107,7 @@ class _NavBarArtisanState extends State<NavBarArtisan> {
                   decoration: BoxDecoration(
                     color:
                         _selectedIndex == 2
-                            ? Color(0XFFBFBFBF)
+                            ? Color(0XFFECEEED)
                             : Colors.transparent,
                     borderRadius: BorderRadius.circular(7),
                   ),

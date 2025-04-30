@@ -1,5 +1,5 @@
-import 'package:bricorasy/theme/theme.dart';
-import 'package:bricorasy/widgets/custom_scaffold.dart';
+import '../../theme/theme.dart';
+import '../../widgets/custom_scaffold.dart';
 import 'package:flutter/material.dart';
 
 class Verificationscreen extends StatefulWidget {

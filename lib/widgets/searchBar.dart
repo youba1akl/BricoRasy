@@ -1,4 +1,4 @@
-import 'package:bricorasy/screens/sign_page/signin-screen.dart';
+import 'loc_custom.dart';
 import 'package:flutter/material.dart';
 
 class Searchbar extends StatefulWidget {
@@ -12,19 +12,19 @@ class _SearchbarState extends State<Searchbar> {
   void _navigateToNewPage() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => Signinscreen()),
+      MaterialPageRoute(builder: (context) => LocCustom()),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(top: 15, left: 15, right: 15, bottom: 10),
+      margin: EdgeInsets.symmetric(horizontal: 5),
       decoration: BoxDecoration(
         boxShadow: [
           BoxShadow(
-            color: const Color.fromARGB(45, 0, 0, 0),
-            blurRadius: 7,
+            color: const Color.fromARGB(19, 0, 0, 0),
+            blurRadius: 4,
             offset: const Offset(0, 1),
             spreadRadius: 0,
           ),
