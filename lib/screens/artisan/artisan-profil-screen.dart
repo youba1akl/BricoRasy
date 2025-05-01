@@ -1,12 +1,26 @@
-import 'package:bricorasy/widgets/poste_custom.dart';
-import 'package:bricorasy/widgets/tarif_custom.dart';
+import '../../widgets/poste_custom.dart';
+import '../../widgets/tarif_custom.dart';
 import 'package:flutter/material.dart';
 
 class Artisanprofilscreen extends StatefulWidget {
-  const Artisanprofilscreen({super.key});
+  const Artisanprofilscreen({
+    super.key,
+    this.username,
+    this.job,
+    this.loc,
+    this.rating,
+    this.like,
+    this.img,
+  });
+  final String? username;
+  final String? job;
+  final String? loc;
+  final String? rating;
+  final String? like;
+  final Image? img;
 
   @override
-  _ArtisanprofilscreenState createState() => _ArtisanprofilscreenState();
+  State<Artisanprofilscreen> createState() => _ArtisanprofilscreenState();
 }
 
 class _ArtisanprofilscreenState extends State<Artisanprofilscreen> {
@@ -54,9 +68,7 @@ class _ArtisanprofilscreenState extends State<Artisanprofilscreen> {
                 height: 260,
                 alignment: Alignment.center,
                 padding: const EdgeInsets.only(top: 20),
-                decoration: const BoxDecoration(
-                  color: Color.fromARGB(242, 248, 248, 248),
-                ),
+                decoration: const BoxDecoration(color: Color(0XFFFAFBFA)),
                 child: Column(
                   children: [
                     Center(
@@ -68,23 +80,25 @@ class _ArtisanprofilscreenState extends State<Artisanprofilscreen> {
                           color: Colors.grey[300],
                         ),
                         child: ClipOval(
-                          child: Image.asset(
-                            'assets/images/exemple.png',
-                            fit: BoxFit.cover,
-                          ),
+                          child:
+                              widget.img ??
+                              Image.asset(
+                                'assets/images/profil.png',
+                                fit: BoxFit.cover,
+                              ),
                         ),
                       ),
                     ),
                     const SizedBox(height: 10),
-                    const Text(
-                      'Aklil Youba',
+                    Text(
+                      widget.username!,
                       style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const Text(
-                      'Developper Web',
+                    Text(
+                      widget.job!,
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -106,7 +120,7 @@ class _ArtisanprofilscreenState extends State<Artisanprofilscreen> {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Icon(Icons.star_border),
-                                  Text('4.5'),
+                                  Text(widget.rating!),
                                 ],
                               ),
                             ),
@@ -132,7 +146,7 @@ class _ArtisanprofilscreenState extends State<Artisanprofilscreen> {
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Icon(Icons.location_on_outlined),
-                                    Text('Bejaia'),
+                                    Text(widget.loc!),
                                   ],
                                 ),
                               ),
@@ -146,7 +160,7 @@ class _ArtisanprofilscreenState extends State<Artisanprofilscreen> {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Icon(Icons.favorite_border),
-                                  Text('100'),
+                                  Text(widget.like!),
                                 ],
                               ),
                             ),
@@ -170,11 +184,12 @@ class _ArtisanprofilscreenState extends State<Artisanprofilscreen> {
                     topLeft: Radius.circular(20),
                     topRight: Radius.circular(20),
                   ),
-                  boxShadow: [
+                  boxShadow: const [
                     BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 20,
-                      offset: Offset(0, -5),
+                      color: Colors.black26,
+                      blurRadius: 2.0,
+                      spreadRadius: 1.0,
+                      offset: Offset(0, 0),
                     ),
                   ],
                 ),
@@ -373,23 +388,79 @@ class _ArtisanprofilscreenState extends State<Artisanprofilscreen> {
                     ),
                     const SizedBox(height: 10),
                     if (currentView == 'postes') ...[
-                      PosteCustom(),
-                      PosteCustom(),
-                      PosteCustom(),
-                      PosteCustom(),
-                      PosteCustom(),
-                      PosteCustom(),
-                      PosteCustom(),
-                      PosteCustom(),
+                      PosteCustom(
+                        img: Image.asset('assets/images/E02.png'),
+                        aime: '30',
+                        comment: '23',
+                      ),
+                      PosteCustom(aime: '30', comment: '40'),
+                      PosteCustom(
+                        img: Image.asset('assets/images/E02.png'),
+                        aime: '64',
+                        comment: '40',
+                      ),
+                      PosteCustom(
+                        img: Image.asset('assets/images/E02.png'),
+                        aime: '64',
+                        comment: '40',
+                      ),
+                      PosteCustom(
+                        img: Image.asset('assets/images/E02.png'),
+                        aime: '64',
+                        comment: '40',
+                      ),
+                      PosteCustom(
+                        img: Image.asset('assets/images/E02.png'),
+                        aime: '64',
+                        comment: '40',
+                      ),
+                      PosteCustom(
+                        img: Image.asset('assets/images/E02.png'),
+                        aime: '30',
+                        comment: '64',
+                      ),
+                      PosteCustom(aime: '30', comment: '23'),
                     ] else if (currentView == 'avis') ...[
-                      PosteCustom(),
-                      PosteCustom(),
-                      PosteCustom(),
-                      PosteCustom(),
-                      PosteCustom(),
-                      PosteCustom(),
-                      PosteCustom(),
-                      PosteCustom(),
+                      PosteCustom(
+                        img: Image.asset('assets/images/E02.png'),
+                        aime: '30',
+                        comment: '23',
+                      ),
+                      PosteCustom(
+                        img: Image.asset('assets/images/E02.png'),
+                        aime: '30',
+                        comment: '23',
+                      ),
+                      PosteCustom(
+                        img: Image.asset('assets/images/E02.png'),
+                        aime: '30',
+                        comment: '23',
+                      ),
+                      PosteCustom(
+                        img: Image.asset('assets/images/E02.png'),
+                        aime: '30',
+                        comment: '23',
+                      ),
+                      PosteCustom(
+                        img: Image.asset('assets/images/E02.png'),
+                        aime: '30',
+                        comment: '23',
+                      ),
+                      PosteCustom(
+                        img: Image.asset('assets/images/E02.png'),
+                        aime: '30',
+                        comment: '23',
+                      ),
+                      PosteCustom(
+                        img: Image.asset('assets/images/E02.png'),
+                        aime: '30',
+                        comment: '23',
+                      ),
+                      PosteCustom(
+                        img: Image.asset('assets/images/E02.png'),
+                        aime: '30',
+                        comment: '23',
+                      ),
                     ],
                   ],
                 ),

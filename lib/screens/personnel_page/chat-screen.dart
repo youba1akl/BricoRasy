@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class Chatscreen extends StatefulWidget {
-  const Chatscreen({super.key});
+  const Chatscreen({super.key, this.username, this.img});
+  final String? username;
+  final Image? img;
 
   @override
   State<Chatscreen> createState() => _ChatscreenState();
@@ -65,7 +67,7 @@ class _ChatscreenState extends State<Chatscreen> {
                   color: Color(0XFF3D4C5E),
                   shape: BoxShape.circle,
                 ),
-                margin: const EdgeInsets.only(left: 5),
+                margin: const EdgeInsets.only(left: 10),
                 padding: const EdgeInsets.all(6),
                 child: const Icon(
                   Icons.arrow_back_ios_rounded,
@@ -76,16 +78,18 @@ class _ChatscreenState extends State<Chatscreen> {
             ),
             const SizedBox(width: 20),
             ClipOval(
-              child: Image.asset(
-                'assets/images/exemple.png',
-                width: 35,
-                height: 35,
-                fit: BoxFit.cover,
-              ),
+              child:
+                  widget.img ??
+                  Image.asset(
+                    'assets/images/profil.png',
+                    width: 35,
+                    height: 35,
+                    fit: BoxFit.cover,
+                  ),
             ),
             const SizedBox(width: 10),
-            const Text(
-              "Aklil Youba",
+            Text(
+              widget.username!,
               style: TextStyle(
                 color: Colors.black,
                 fontWeight: FontWeight.w600,
@@ -96,7 +100,8 @@ class _ChatscreenState extends State<Chatscreen> {
         ),
       ),
       body: Container(
-        decoration: BoxDecoration(color: Colors.white),
+        padding: EdgeInsets.all(5),
+        decoration: BoxDecoration(color: Color(0XFFFAFBFA)),
         child: Column(
           children: [
             Expanded(

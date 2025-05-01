@@ -1,130 +1,102 @@
 import 'package:flutter/material.dart';
 
-class CustomContainerAnn extends StatefulWidget {
+class CustomContainerAnn extends StatelessWidget {
   const CustomContainerAnn({
     super.key,
     this.title,
     this.description,
     this.localisation,
+    this.img,
     this.page,
   });
+
   final String? title;
   final String? description;
   final String? localisation;
+  final Image? img;
   final Widget? page;
 
-  @override
-  State<CustomContainerAnn> createState() => _CustomContainerAnnState();
-}
+  String capitalizeWords(String text) {
+    return text
+        .split(' ')
+        .map((word) {
+          if (word.isNotEmpty) {
+            return '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}';
+          }
+          return '';
+        })
+        .join(' ');
+  }
 
-String capitalizeWords(String text) {
-  return text
-      .split(' ')
-      .map(
-        (word) =>
-            word.isNotEmpty
-                ? '${word[0].toUpperCase()}${word.substring(1)}'
-                : '',
-      )
-      .join(' ');
-}
-
-class _CustomContainerAnnState extends State<CustomContainerAnn> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      padding: EdgeInsets.all(5),
-      height: 100,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.25),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-            spreadRadius: 1,
-          ),
-        ],
-      ),
+    return GestureDetector(
+      onTap: () {
+        if (page != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => page!),
+          );
+        }
+      },
       child: Container(
-        padding: EdgeInsets.all(5),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: Color(0XFF335090),
-          borderRadius: BorderRadius.circular(7),
+          color: Colors.white,
+          border: Border(bottom: BorderSide(color: Colors.black38, width: 0.5)),
         ),
-        child: Row(
-          children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(5),
-                color: Colors.white,
+        child: IntrinsicHeight(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Flexible(
+                fit: FlexFit.loose,
+                child: Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5),
+                    color: Colors.black,
+                  ),
+                  clipBehavior: Clip.hardEdge,
+                  child:
+                      img ??
+                      Image.asset(
+                        'assets/images/placeholder.png',
+                        fit: BoxFit.cover,
+                      ),
+                ),
               ),
-              clipBehavior: Clip.hardEdge,
-              child: Image.asset(
-                'assets/images/exemple.png',
-                fit: BoxFit.contain,
-              ),
-            ),
-            const SizedBox(width: 5),
-            Expanded(
-              child: Column(
+              const SizedBox(height: 5),
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Text(
-                    capitalizeWords(widget.title!),
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
+                    capitalizeWords(title ?? 'No Title'),
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 14,
                       fontWeight: FontWeight.bold,
                     ),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                   ),
                   Text(
-                    widget.description!,
-                    style: TextStyle(color: Colors.white70, fontSize: 12),
+                    description ?? 'No description available.',
+                    style: const TextStyle(color: Colors.black54, fontSize: 11),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 2,
                   ),
-                  Spacer(),
+                  const SizedBox(height: 10),
                   Text(
-                    capitalizeWords(widget.localisation!),
-                    style: TextStyle(color: Colors.white60, fontSize: 13),
+                    capitalizeWords(localisation ?? 'No Location'),
+                    style: const TextStyle(color: Colors.black45, fontSize: 13),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                   ),
                 ],
               ),
-            ),
-            const SizedBox(width: 16),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => widget.page!),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                shape: CircleBorder(),
-                backgroundColor: const Color(0XFF7A8DB7),
-                padding: const EdgeInsets.all(5),
-                minimumSize: const Size(35, 35),
-              ),
-              child: Center(
-                child: Icon(
-                  Icons.arrow_forward_ios_sharp,
-                  size: 17,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

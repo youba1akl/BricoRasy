@@ -1,6 +1,6 @@
-import 'package:bricorasy/screens/sign_page/verification-screen.dart';
-import 'package:bricorasy/theme/theme.dart';
-import 'package:bricorasy/widgets/custom_scaffold.dart';
+import 'verification-screen.dart';
+import '../../theme/theme.dart';
+import '../../widgets/custom_scaffold.dart';
 import 'package:flutter/material.dart';
 
 class Forgetscreen extends StatefulWidget {

@@ -1,20 +1,24 @@
 import 'package:bricorasy/screens/sign_page/double-sign-screen.dart';
-import 'package:bricorasy/screens/sign_page/signin-screen.dart';
-import 'package:bricorasy/screens/sign_page/therme-screen.dart';
-import 'package:bricorasy/theme/theme.dart';
-import 'package:bricorasy/widgets/custom_scaffold.dart';
+import 'package:bricorasy/services/auth_services.dart';
+
+import 'signin-screen.dart';
+import 'therme-screen.dart';
+import '../../theme/theme.dart';
+import '../../widgets/custom_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class Signupscreen extends StatefulWidget {
-  const Signupscreen({super.key});
+  final String role;
+  const Signupscreen({super.key, required this.role});
 
   @override
   State<Signupscreen> createState() => _SignupscreenState();
 }
 
 class _SignupscreenState extends State<Signupscreen> {
-  final _formSignUpKey = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
+  String _fullname = '', _email = '', _password = '';
   bool agree = true;
   @override
   Widget build(BuildContext context) {
@@ -35,7 +39,7 @@ class _SignupscreenState extends State<Signupscreen> {
               ),
               child: SingleChildScrollView(
                 child: Form(
-                  key: _formSignUpKey,
+                  key: _formKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -88,8 +92,8 @@ class _SignupscreenState extends State<Signupscreen> {
                           ),
                           const SizedBox(height: 5.0),
                           TextFormField(
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
+                            validator: (v) {
+                              if (v == null || v.isEmpty) {
                                 return 'Please entre Fullname';
                               }
                               return null;
@@ -117,6 +121,7 @@ class _SignupscreenState extends State<Signupscreen> {
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
+                            onSaved: (v) => _fullname = v!.trim(),
                           ),
                         ],
                       ),
@@ -134,11 +139,13 @@ class _SignupscreenState extends State<Signupscreen> {
                           ),
                           const SizedBox(height: 5.0),
                           TextFormField(
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please entre Email';
-                              }
-                              return null;
+                            validator: (v) {
+                              if (v == null || v.isEmpty)
+                                return 'Please entre your email';
+                              final regex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                              return regex.hasMatch(v)
+                                  ? null
+                                  : 'Email invalide';
                             },
                             decoration: InputDecoration(
                               hintText: 'Enter Email',
@@ -163,6 +170,7 @@ class _SignupscreenState extends State<Signupscreen> {
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
+                            onSaved: (v) => _email = v!.trim(),
                           ),
                         ],
                       ),
@@ -180,12 +188,12 @@ class _SignupscreenState extends State<Signupscreen> {
                           ),
                           const SizedBox(height: 5.0),
                           TextFormField(
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please entre Password';
-                              }
-                              return null;
-                            },
+                            onSaved: (v) => _password = v!.trim(),
+                            validator:
+                                (v) =>
+                                    (v != null && v.length >= 6)
+                                        ? null
+                                        : 'Au moins 6 caractères',
                             decoration: InputDecoration(
                               hintText: 'Enter Password',
                               hintStyle: const TextStyle(color: Colors.black26),
@@ -274,25 +282,47 @@ class _SignupscreenState extends State<Signupscreen> {
                         height: 45,
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () {
-                            if (_formSignUpKey.currentState!.validate() &&
-                                agree) {
+                          onPressed: () async {
+                            if (_formKey.currentState!.validate() && agree) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('Processing Data'),
+                                  content: Text('Processing Data...'),
                                 ),
                               );
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (e) => Doublesignscreen(),
-                                ),
-                              );
+
+                              _formKey.currentState!.save();
+
+                              // Envoyer OTP à l'email
+                              bool otpSent = await AuthService.sendOtp(_email);
+
+                              if (otpSent) {
+                                // Si l'OTP a été envoyé avec succès, aller à la page OTP
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (_) => Doublesignscreen(
+                                          role: widget.role,
+                                          fullname: _fullname,
+                                          email: _email,
+                                          password: _password,
+                                        ),
+                                  ),
+                                );
+                              } else if (!otpSent) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Erreur lors de l\'envoi du code OTP.',
+                                    ),
+                                  ),
+                                );
+                              }
                             } else if (!agree) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text(
-                                    'Please agree of the processing of personage',
+                                    'Please agree to the Terms & Conditions',
                                   ),
                                 ),
                               );

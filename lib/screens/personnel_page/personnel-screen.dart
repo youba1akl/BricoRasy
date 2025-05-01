@@ -1,5 +1,5 @@
-import 'package:bricorasy/widgets/message_custom.dart';
-import 'package:bricorasy/widgets/poste_custom.dart';
+import '../../widgets/message_custom.dart';
+import '../../widgets/poste_custom.dart';
 import 'package:flutter/material.dart';
 
 class PersonnelScreen extends StatefulWidget {
@@ -11,6 +11,8 @@ class PersonnelScreen extends StatefulWidget {
 
 class _PersonnelScreenState extends State<PersonnelScreen> {
   String currentView = 'messages';
+  String userRole =
+      'simple'; // Change cela pour 'client' selon l'utilisateur connecté
 
   void toggleView(String view) {
     setState(() {
@@ -23,59 +25,24 @@ class _PersonnelScreenState extends State<PersonnelScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              height: 80,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(242, 248, 248, 248),
-              ),
-              padding: EdgeInsets.only(bottom: 15),
-              child: const Text(
-                'My Activity',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-
-          // Contenu principal
           Positioned.fill(
             top: 60,
             left: 0,
             right: 0,
             bottom: 0,
             child: Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 20,
-                    spreadRadius: 0,
-                    offset: Offset(0, -5),
-                  ),
-                ],
-              ),
-              padding: EdgeInsets.all(10),
+              decoration: const BoxDecoration(color: Color(0XFFFAFBFA)),
+              padding: EdgeInsets.only(top: 8, left: 8, right: 8),
               child: Column(
                 children: [
                   Row(
                     children: [
                       buildToggleButton('messages', 'Messages'),
                       const SizedBox(width: 5),
-                      buildToggleButton('postes', 'Poste'),
-                      const SizedBox(width: 5),
+                      if (userRole == 'artisan') ...[
+                        buildToggleButton('postes', 'Poste'),
+                        const SizedBox(width: 5),
+                      ],
                       buildToggleButton('annonces', 'Annonce'),
                     ],
                   ),
@@ -94,19 +61,18 @@ class _PersonnelScreenState extends State<PersonnelScreen> {
                               ),
                             ),
                             const SizedBox(height: 10),
-                            MessageCustom(),
-                            MessageCustom(),
-                            MessageCustom(),
-                            MessageCustom(),
-                            MessageCustom(),
-                            MessageCustom(),
-                            MessageCustom(),
-                            MessageCustom(),
-                            MessageCustom(),
-                            MessageCustom(),
-                            MessageCustom(),
-                            MessageCustom(),
-                          ] else if (currentView == 'postes') ...[
+                            MessageCustom(
+                              img: Image.asset('assets/images/exemple.png'),
+                              username: 'Aklil Youba',
+                              lastmssg: 'nouveaux messages',
+                            ),
+                            MessageCustom(
+                              username: 'Aklil Youba',
+                              lastmssg: 'nouveaux messages',
+                            ),
+                            // Ajoute ici les autres messages
+                          ] else if (currentView == 'postes' &&
+                              userRole == 'artisan') ...[
                             const Text(
                               'Postes',
                               style: TextStyle(
@@ -115,14 +81,17 @@ class _PersonnelScreenState extends State<PersonnelScreen> {
                               ),
                             ),
                             const SizedBox(height: 10),
-                            PosteCustom(),
-                            PosteCustom(),
-                            PosteCustom(),
-                            PosteCustom(),
-                            PosteCustom(),
-                            PosteCustom(),
-                            PosteCustom(),
-                            PosteCustom(),
+                            PosteCustom(
+                              img: Image.asset('assets/images/E02.png'),
+                              aime: '30',
+                              comment: '40',
+                            ),
+                            PosteCustom(
+                              img: Image.asset('assets/images/E02.png'),
+                              aime: '30',
+                              comment: '40',
+                            ),
+                            // Ajoute ici les autres postes
                           ] else if (currentView == 'annonces') ...[
                             const Text(
                               'Annonces',
@@ -132,20 +101,55 @@ class _PersonnelScreenState extends State<PersonnelScreen> {
                               ),
                             ),
                             const SizedBox(height: 10),
-                            PosteCustom(),
-                            PosteCustom(),
-                            PosteCustom(),
-                            PosteCustom(),
-                            PosteCustom(),
-                            PosteCustom(),
-                            PosteCustom(),
-                            PosteCustom(),
+                            PosteCustom(
+                              img: Image.asset('assets/images/E02.png'),
+                              aime: '30',
+                              comment: '40',
+                            ),
+                            PosteCustom(
+                              img: Image.asset('assets/images/E02.png'),
+                              aime: '30',
+                              comment: '40',
+                            ),
+                            // Ajoute ici les autres annonces
                           ],
                         ],
                       ),
                     ),
                   ),
                 ],
+              ),
+            ),
+          ),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: 60,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
+                ),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 2.0,
+                    spreadRadius: 1.0,
+                    offset: Offset(0, 0),
+                  ),
+                ],
+              ),
+              child: const Text(
+                'My Activity',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 25,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),

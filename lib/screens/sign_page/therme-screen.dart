@@ -1,4 +1,4 @@
-import 'package:bricorasy/widgets/custom_scaffold.dart';
+import '../../widgets/custom_scaffold.dart';
 import 'package:flutter/material.dart';
 
 class Thermescreen extends StatelessWidget {

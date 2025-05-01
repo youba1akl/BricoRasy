@@ -12,12 +12,7 @@ class AddAnnoProf extends StatefulWidget {
 class _AddAnnoProfState extends State<AddAnnoProf> {
   final ImagePicker _picker = ImagePicker();
   List<XFile> _images = [];
-  final List<String> type_tache = [
-    'Plombier',
-    'macon',
-    'jardinier',
-    'Autre',
-  ];
+  final List<String> type_tache = ['Plombier', 'macon', 'jardinier', 'Autre'];
 
   Future<void> _pickImage() async {
     final XFile? image = await _picker.pickImage(

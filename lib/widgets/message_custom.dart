@@ -1,8 +1,11 @@
-import 'package:bricorasy/screens/personnel_page/chat-screen.dart';
+import '../screens/personnel_page/chat-screen.dart';
 import 'package:flutter/material.dart';
 
 class MessageCustom extends StatefulWidget {
-  const MessageCustom({super.key});
+  const MessageCustom({super.key, this.username, this.lastmssg, this.img});
+  final String? username;
+  final String? lastmssg;
+  final Image? img;
 
   @override
   State<MessageCustom> createState() => _MessageCustomState();
@@ -15,15 +18,17 @@ class _MessageCustomState extends State<MessageCustom> {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => Chatscreen()),
+          MaterialPageRoute(
+            builder: (context) => Chatscreen(username: 'Aklil Youba'),
+          ),
         );
       },
       child: Container(
         padding: EdgeInsets.all(5),
-        height: 90,
+        height: 50,
         width: double.infinity,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Color(0XFFFAFBFA),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
@@ -31,10 +36,9 @@ class _MessageCustomState extends State<MessageCustom> {
             Flexible(
               flex: 1,
               child: ClipOval(
-                child: Image.asset(
-                  'assets/images/exemple.png',
-                  fit: BoxFit.cover,
-                ),
+                child:
+                    widget.img ??
+                    Image.asset('assets/images/profil.png', fit: BoxFit.cover),
               ),
             ),
             const SizedBox(width: 15),
@@ -45,19 +49,19 @@ class _MessageCustomState extends State<MessageCustom> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'Aklil Youba',
+                    widget.username!,
                     style: TextStyle(
                       color: Colors.black,
-                      fontSize: 18,
+                      fontSize: 15,
                       fontWeight: FontWeight.bold,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
-                    'nouveaux messages',
+                    widget.lastmssg!,
                     style: TextStyle(
                       color: Colors.black87,
-                      fontSize: 16,
+                      fontSize: 13,
                       fontWeight: FontWeight.bold,
                     ),
                     overflow: TextOverflow.ellipsis,

@@ -1,16 +1,20 @@
-import 'package:bricorasy/screens/artisan/artisan-profil-screen.dart';
 import 'package:flutter/material.dart';
 
 class CustomContainerArtisan extends StatefulWidget {
   const CustomContainerArtisan({
-    super.key,
     this.fullname,
     this.job,
     this.localisation,
+    this.rating,
+    this.img,
+    this.page,
   });
   final String? fullname;
   final String? job;
   final String? localisation;
+  final String? rating;
+  final Image? img;
+  final Widget? page;
 
   @override
   State<CustomContainerArtisan> createState() => _CustomContainerArtisanState();
@@ -32,19 +36,19 @@ class _CustomContainerArtisanState extends State<CustomContainerArtisan> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      margin: EdgeInsets.symmetric(vertical: 5, horizontal: 5),
       padding: EdgeInsets.all(5),
       height: 90,
       width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
-            color: Colors.black.withOpacity(0.25),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-            spreadRadius: 1,
+            color: Colors.black26,
+            blurRadius: 1.0,
+            spreadRadius: 0.25,
+            offset: Offset(0, 0),
           ),
         ],
       ),
@@ -52,7 +56,7 @@ class _CustomContainerArtisanState extends State<CustomContainerArtisan> {
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => Artisanprofilscreen()),
+            MaterialPageRoute(builder: (context) => widget.page!),
           );
         },
         child: Container(
@@ -71,10 +75,12 @@ class _CustomContainerArtisanState extends State<CustomContainerArtisan> {
                   color: Colors.white,
                 ),
                 clipBehavior: Clip.hardEdge,
-                child: Image.asset(
-                  'assets/images/exemple.png',
-                  fit: BoxFit.contain,
-                ),
+                child:
+                    widget.img ??
+                    Image.asset(
+                      'assets/images/profil.png',
+                      fit: BoxFit.contain,
+                    ),
               ),
               const SizedBox(width: 5),
               Expanded(
@@ -121,7 +127,7 @@ class _CustomContainerArtisanState extends State<CustomContainerArtisan> {
                     Icon(Icons.star_border, size: 28, color: Colors.white60),
                     const SizedBox(height: 4),
                     Text(
-                      '4.5',
+                      capitalizeWords(widget.rating!),
                       style: const TextStyle(
                         color: Colors.white60,
                         fontSize: 16,

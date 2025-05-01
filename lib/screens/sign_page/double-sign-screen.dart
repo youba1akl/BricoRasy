@@ -1,9 +1,25 @@
-import 'package:bricorasy/theme/theme.dart';
-import 'package:bricorasy/widgets/custom_scaffold.dart';
+import 'dart:async';
+
+import 'package:bricorasy/screens/sign_page/signup-form.dart';
+import 'package:bricorasy/services/auth_services.dart';
+
+import '../../theme/theme.dart';
+import '../../widgets/custom_scaffold.dart';
 import 'package:flutter/material.dart';
 
 class Doublesignscreen extends StatefulWidget {
-  Doublesignscreen({super.key});
+  final String role;
+  final String fullname;
+  final String email;
+  final String password;
+
+  const Doublesignscreen({
+    super.key,
+    required this.role,
+    required this.fullname,
+    required this.email,
+    required this.password,
+  });
 
   @override
   _DoublesignscreenState createState() => _DoublesignscreenState();
@@ -53,6 +69,50 @@ class _DoublesignscreenState extends State<Doublesignscreen> {
         },
       ),
     );
+  }
+
+  int _secondsRemaining = 0;
+  late Timer _timer;
+  bool _isResendEnabled = true;
+
+  // fonction pour renvoyé le code OTP
+  Future<void> _resendOtp() async {
+    if (_isResendEnabled) {
+      bool otpSent = await AuthService.sendOtp(widget.email);
+
+      if (otpSent) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('OTP renvoyé avec succès')),
+        );
+
+        setState(() {
+          _isResendEnabled = false;
+          _secondsRemaining = 60;
+        });
+
+        _startTimer();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Erreur lors du renvoi de l\'OTP')),
+        );
+      }
+    }
+  }
+
+  // fonction si le code il est renvoyé tu ne peut pas cliquer sur resend juste apres 1min
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_secondsRemaining > 0) {
+        setState(() {
+          _secondsRemaining--;
+        });
+      } else {
+        setState(() {
+          _isResendEnabled = true;
+        });
+        _timer.cancel();
+      }
+    });
   }
 
   @override
@@ -158,7 +218,9 @@ class _DoublesignscreenState extends State<Doublesignscreen> {
                         ),
                         GestureDetector(
                           onTap: () {
-                            // _sendOtpCode();
+                            if (_isResendEnabled) {
+                              _resendOtp();
+                            }
                           },
                           child: Container(
                             decoration: BoxDecoration(
@@ -186,27 +248,58 @@ class _DoublesignscreenState extends State<Doublesignscreen> {
                       height: 45,
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
+                        onPressed: () async {
                           String otp =
                               _controller1.text +
                               _controller2.text +
                               _controller3.text +
                               _controller4.text;
+
                           if (otp.length == 4) {
-                            // Simuler la vérification du code OTP
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Code OTP vérifié avec succès'),
-                              ),
+                            // Envoyer la vérification OTP au serveur
+                            bool otpVerified = await AuthService.verifyOtp(
+                              widget.email,
+                              otp,
                             );
+
+                            if (otpVerified) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Code OTP vérifié avec succès'),
+                                ),
+                              );
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => FormSignUp(
+                                        role: widget.role,
+                                        fullname: widget.fullname,
+                                        email: widget.email,
+                                        password: widget.password,
+                                      ),
+                                ),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Code OTP incorrect. Veuillez réessayer.',
+                                  ),
+                                ),
+                              );
+                            }
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Veuillez entrer un code valide'),
+                                content: Text(
+                                  'Veuillez entrer un code valide.',
+                                ),
                               ),
                             );
                           }
                         },
+
                         style: ElevatedButton.styleFrom(
                           backgroundColor: lightColorScheme.primary,
                           foregroundColor: Colors.white,

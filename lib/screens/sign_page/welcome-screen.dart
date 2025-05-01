@@ -1,8 +1,9 @@
-import 'package:bricorasy/screens/sign_page/signin-screen.dart';
-import 'package:bricorasy/screens/sign_page/signup-screen.dart';
-import 'package:bricorasy/theme/theme.dart';
-import 'package:bricorasy/widgets/custom_scaffold.dart';
-import 'package:bricorasy/widgets/welcome_button.dart';
+import 'package:bricorasy/screens/sign_page/profil-choice.dart';
+
+import 'signin-screen.dart';
+import '../../theme/theme.dart';
+import '../../widgets/custom_scaffold.dart';
+import '../../widgets/welcome_button.dart';
 import 'package:flutter/material.dart';
 
 class Welcomescreen extends StatelessWidget {
@@ -61,7 +62,7 @@ class Welcomescreen extends StatelessWidget {
                   Expanded(
                     child: WelcomeButton(
                       buttonText: 'Sign Up',
-                      onTap: Signupscreen(),
+                      onTap: Profilchoice(),
                       color: Colors.white,
                       colorText: lightColorScheme.primary,
                     ),

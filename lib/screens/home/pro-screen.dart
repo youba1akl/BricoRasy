@@ -1,5 +1,5 @@
-import 'package:bricorasy/widgets/tache_custom.dart';
 import 'package:flutter/material.dart';
+import '../../widgets/tache_custom.dart';
 
 class Proscreen extends StatefulWidget {
   const Proscreen({super.key});
@@ -138,13 +138,6 @@ class _ProscreenState extends State<Proscreen> {
                       ),
                     ),
                     SizedBox(height: 7),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 3,
-                      child: Container(
-                        decoration: BoxDecoration(color: Colors.black54),
-                      ),
-                    ),
                     Text(
                       'Nettoyage Maison',
                       style: TextStyle(
@@ -162,13 +155,6 @@ class _ProscreenState extends State<Proscreen> {
                       ),
                     ),
                     SizedBox(height: 7),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 3,
-                      child: Container(
-                        decoration: BoxDecoration(color: Colors.black54),
-                      ),
-                    ),
                     TacheCustom(
                       title: 'Macon',
                       detail: 'construire un mur de 20m²',
