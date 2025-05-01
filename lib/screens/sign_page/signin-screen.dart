@@ -3,7 +3,7 @@ import 'package:bricorasy/services/auth_services.dart';
 import 'forget-screen.dart';
 import '../../theme/theme.dart';
 import '../../widgets/custom_scaffold.dart';
-import '../../widgets/home_scaffold.dart';
+import '../../widgets2/home_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
