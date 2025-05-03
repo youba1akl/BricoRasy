@@ -37,7 +37,7 @@ class BricoleService {
     final List<dynamic> rawPhotos = json['photo'] as List<dynamic>;
     final String imgUrl =
         rawPhotos.isNotEmpty
-            ? 'http://10.0.2.2:5000/uploads/${rawPhotos.first}'
+            ? 'http://127.0.0.1:5000/uploads/${rawPhotos.first}'
             : '';
 
     return BricoleService(
