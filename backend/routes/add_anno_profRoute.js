@@ -17,3 +17,5 @@ const upload = multer({ storage });
 
 router.post('/professionnel',upload.array('photo', 5),Annonce.create_annonce_prof);
 router.get('/professionnel',Annonce.getAnnonce_prof);
+
+module.exports = router;

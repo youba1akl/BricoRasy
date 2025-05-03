@@ -7,22 +7,24 @@ exports.create_annonce_prof=async (req,res)=>{
     try {
         const filenames = req.files.map(f => f.filename);
     const {
-      titre,
-      localisation,
+      name,
       description,
-      prix,
-      professionnels,
+      price,
+      localisation,
       date_creation,
-      date_expiration
+      date_expiration,
+      
+      type,
+     
     } = req.body;
 
 
     const newAnnonce=annonce_prof_schema({
-        titre,
-        localisation,
-        description,
-        prix,
-        professionnels,
+        name,
+      description,
+      price,
+      localisation,
+      type,
         date_creation:   new Date(date_creation),
         date_expiration:    new Date(date_expiration),
         photo:            filenames

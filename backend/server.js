@@ -8,7 +8,8 @@ const postRoutes = require("./routes/postRoutes"); // 👈 importer les routes p
 const ratingRoutes = require("./routes/ratingRoutes"); // 👈 importer les routes rating
 const reportRoute = require("./routes/reportRoute"); // 👈 importer les routes report
 const annonceRoute=require("./routes/addanoo_route");
-const outilRoute=require('./routes/addanno_outil_route')
+const outilRoute=require('./routes/addanno_outil_route');
+const proRoute=require('./routes/add_anno_profRoute');
 
 dotenv.config();
 
@@ -31,7 +32,7 @@ app.use("/api/services", serviceRoutes);
 app.use("/api/users", userRoutes);
 
 //toutels les annonces ajout et geetter
-app.use("/api/annonce",annonceRoute,outilRoute);
+app.use("/api/annonce",annonceRoute,outilRoute,proRoute);
 
 const PORT = process.env.PORT || 5000;
 

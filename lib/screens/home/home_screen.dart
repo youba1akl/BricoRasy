@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 // Model Imports
 import 'package:bricorasy/models/bricole_service.dart';
+import 'package:bricorasy/models/professional_service.dart';
 import 'package:bricorasy/models/dummy_tool.dart';
 
 // Widget Imports
@@ -10,6 +11,8 @@ import 'package:bricorasy/widgets2/horizontal_filter_bar.dart';
 import 'package:bricorasy/widgets2/home/service_list_view.dart';
 import 'package:bricorasy/widgets2/home/tool_grid_view.dart';
 import 'package:bricorasy/services/HomePage_service.dart';
+
+import 'package:bricorasy/widgets2/home/proService_listView.dart';
 
 // Define the background color (or get from theme)
 const kAppBackgroundColor = Color(0xFFFFF0E8); // Example: Light Pinkish-Beige
@@ -42,9 +45,21 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         );
       case 'Professionnel':
-        return ServiceListView(
-          services: List.empty(),
-          onServiceTapped: (p0) {},
+        return FutureBuilder<List<ProfessionalService>>(
+          future: apiService_pro.fetchServicePro(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting)
+              return const Center(child: CircularProgressIndicator());
+            if (snapshot.hasError)
+              return Center(child: Text('Erreur : ${snapshot.error}'));
+            final services = snapshot.data!;
+            if (services.isEmpty)
+              return const Center(child: Text('Aucune annonce disponible'));
+            return ProserviceListView(
+              services: services,
+              onServiceTapped: (p0) {},
+            );
+          },
         );
       case 'Bricole':
       default:
