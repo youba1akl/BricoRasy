@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 
 // Model Imports
 import 'package:bricorasy/models/bricole_service.dart';
+import 'package:bricorasy/models/dummy_tool.dart';
 
 // Widget Imports
 import 'package:bricorasy/widgets2/search_form.dart';
 import 'package:bricorasy/widgets2/horizontal_filter_bar.dart';
 import 'package:bricorasy/widgets2/home/service_list_view.dart';
 import 'package:bricorasy/widgets2/home/tool_grid_view.dart';
-import 'package:bricorasy/backend/service.dart';
+import 'package:bricorasy/services/HomePage_service.dart';
 
 // Define the background color (or get from theme)
 const kAppBackgroundColor = Color(0xFFFFF0E8); // Example: Light Pinkish-Beige
@@ -27,7 +28,19 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildCurrentContent() {
     switch (_selectedFilter) {
       case 'Objet':
-        return ToolGridView(tools: List.empty(), onToolTapped: (p0) {});
+        return FutureBuilder<List<DummyTool>>(
+          future: apiService_outil.fetchTools(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting)
+              return const Center(child: CircularProgressIndicator());
+            if (snapshot.hasError)
+              return Center(child: Text('Erreur : ${snapshot.error}'));
+            final services = snapshot.data!;
+            if (services.isEmpty)
+              return const Center(child: Text('Aucune annonce disponible'));
+            return ToolGridView(tools: services, onToolTapped: (p0) {});
+          },
+        );
       case 'Professionnel':
         return ServiceListView(
           services: List.empty(),
@@ -83,9 +96,14 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: HorizontalFilterBar(
                 selectedFilter: _selectedFilter,
-                onFilterSelected: (p0) {},
+                onFilterSelected: (filter) {
+                  setState(() {
+                    _selectedFilter = filter;
+                  });
+                },
               ),
             ),
+
             // No SizedBox needed here, content padding handles spacing below filter bar
 
             // Dynamic Content Area

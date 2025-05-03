@@ -4,8 +4,7 @@ const path    = require('path');
 
 const router  = express.Router();
 
-const Annonce = require('../controllers/apianno');
-
+const Annonce = require('../controllers/api_annonce_prof_Controller');
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, 'uploads/'),
@@ -16,13 +15,5 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-
-router.post(
-  '/bricole',
-  upload.array('photo', 5),
-  Annonce.createAnnonceBricole
-);
-
-router.get('/bricole',Annonce.getAnnonceBricole );
-
-module.exports = router;
+router.post('/professionnel',upload.array('photo', 5),Annonce.create_annonce_prof);
+router.get('/professionnel',Annonce.getAnnonce_prof);

@@ -32,3 +32,15 @@ exports.createAnnonceBricole = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+exports.getAnnonceBricole = async (req,res) =>{
+  try {
+    const annonces = await annonceBricoleModel.find().sort({ date_creation: -1 });
+    res.json(annonces);
+  } catch (error) {
+    console.error('Failed to fetch annonces:', error);
+    res
+      .status(500)
+      .json({ error: 'Erreur serveur lors de la récupération des annonces.' });
+  }
+}

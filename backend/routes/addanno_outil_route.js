@@ -2,7 +2,7 @@ const express = require('express');
 const multer  = require('multer');
 const path    = require('path');
 const router = express.Router();
-const { createAnnonceOutil } = require('../controllers/api_outil');
+const outil = require('../controllers/api_outil');
 
 
 const storage = multer.diskStorage({
@@ -12,9 +12,10 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 router.post(
-  '/api/annonces/outil',
+  '/outil',
   upload.array('photo', 5),
-  createAnnonceOutil
+  outil.createAnnonceOutil
 );
 
+router.get('/outil',outil.getOutil);
 module.exports = router;

@@ -1,11 +1,12 @@
+import 'package:bricorasy/models/dummy_tool.dart';
 import 'package:flutter/material.dart';
 import 'package:bricorasy/widgets2/tool_card.dart'; // Import your ToolCard
 
 class ToolGridView extends StatelessWidget {
   // Accept Map for now, change to List<DummyTool> later
-  final List<Map<String, dynamic>> tools;
+  final List<DummyTool> tools;
   // Pass the specific tool data (Map) on tap
-  final Function(Map<String, dynamic>) onToolTapped;
+  final Function(DummyTool) onToolTapped;
 
   const ToolGridView({
     super.key,

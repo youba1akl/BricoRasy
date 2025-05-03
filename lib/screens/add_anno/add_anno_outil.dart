@@ -67,7 +67,7 @@ class _AddAnnoOutilState extends State<AddAnnoOutil> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _submitting = true);
 
-    final uri = Uri.parse('http://10.0.2.2:8000/api/annonces/outil');
+    final uri = Uri.parse('http://10.0.2.2:5000/api/annonce/outil');
     final req =
         http.MultipartRequest('POST', uri)
           ..fields['localisation'] = _locationCtrl.text
