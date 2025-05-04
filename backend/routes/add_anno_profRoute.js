@@ -1,11 +1,11 @@
 const express = require('express');
 const multer  = require('multer');
 const path    = require('path');
+const { create_annonce_prof, getAnnonce_prof } = require('../controllers/api_annonce_prof_Controller');
 
-const router  = express.Router();
+const router = express.Router();
 
-const Annonce = require('../controllers/api_annonce_prof_Controller');
-
+// Multer setup for image uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, 'uploads/'),
   filename:    (req, file, cb) => {
@@ -15,7 +15,10 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-router.post('/professionnel',upload.array('photo', 5),Annonce.create_annonce_prof);
-router.get('/professionnel',Annonce.getAnnonce_prof);
+// POST   /api/annonce/professionnel
+router.post('/professionnel', upload.array('photo', 5), create_annonce_prof);
+
+// GET    /api/annonce/professionnel
+router.get('/professionnel', getAnnonce_prof);
 
 module.exports = router;
