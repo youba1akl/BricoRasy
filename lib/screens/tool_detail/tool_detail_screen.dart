@@ -1,26 +1,27 @@
-import 'dart:convert';
+import 'dart:convert'; // For jsonEncode in report
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:share_plus/share_plus.dart';
-import 'package:bricorasy/models/bricole_service.dart'; // Import your service model
+import 'package:http/http.dart' as http; // For report
+import 'package:share_plus/share_plus.dart'; // For sharing
+import 'package:bricorasy/models/dummy_tool.dart'; // Import your tool model
 import 'package:intl/intl.dart'; // Import for date formatting
 
 // Define your base API URL (uses 10.0.2.2 for Android Emulator connecting to localhost)
+// Keep IP addresses as they are
 const String API_BASE_URL = "http://127.0.0.1:5000";
 
-class Bricolescreen extends StatefulWidget {
-  final BricoleService service;
+class ToolDetailScreen extends StatefulWidget {
+  final DummyTool tool; // Takes the tool object
 
-  const Bricolescreen({
+  const ToolDetailScreen({
     super.key,
-    required this.service,
+    required this.tool, // Constructor requires the tool object
   });
 
   @override
-  State<Bricolescreen> createState() => _BricolescreenState();
+  State<ToolDetailScreen> createState() => _ToolDetailScreenState();
 }
 
-class _BricolescreenState extends State<Bricolescreen> {
+class _ToolDetailScreenState extends State<ToolDetailScreen> {
   // Helper function to build info rows consistently
   Widget _buildInfoRow(BuildContext context, IconData icon, String text) {
     final Color mutedTextColor = Theme.of(context).colorScheme.onSurfaceVariant;
@@ -56,23 +57,23 @@ class _BricolescreenState extends State<Bricolescreen> {
     }
   }
 
-
   // Placeholder function for button actions
   void _callAction() {
-    print('Calling provider for: ${widget.service.name}');
-    // TODO: Implement actual phone call logic
+    print('Calling provider for tool: ${widget.tool.name}');
+    // TODO: Implement actual phone call logic (needs provider contact info)
   }
 
   void _messageAction() {
-    print('Messaging provider for: ${widget.service.name}');
-    // TODO: Implement actual messaging logic
+    print('Messaging provider for tool: ${widget.tool.name}');
+    // TODO: Implement actual messaging logic (needs provider contact info/chat screen)
   }
 
   // Send Report Function
   void sendReport(String message) async {
-    final String annonceId = widget.service.id; // Use the actual ID from the model
+    final String annonceId = widget.tool.id; // Use the tool's ID
     const String placeholderUserId = "user_abc"; // TODO: Replace with actual logged-in user ID
 
+    // Assuming the same report endpoint works for tools
     final String reportUrl = "$API_BASE_URL/api/reports";
 
     try {
@@ -81,8 +82,9 @@ class _BricolescreenState extends State<Bricolescreen> {
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "message": message,
-          "annonceId": annonceId, // Use actual ID
+          "annonceId": annonceId, // Use tool ID
           "userId": placeholderUserId,
+          "annonceType": "outil", // Optional: Add type if backend needs it
         }),
       );
 
@@ -117,7 +119,7 @@ class _BricolescreenState extends State<Bricolescreen> {
   // Share Function
   void _shareAction() {
     Share.share(
-        'Regarde ce service sur BricoRasy : ${widget.service.name} à ${widget.service.localisation}');
+        'Regarde cet outil sur BricoRasy : ${widget.tool.name} à ${widget.tool.localisation}');
   }
 
   // Show Report Dialog
@@ -127,7 +129,7 @@ class _BricolescreenState extends State<Bricolescreen> {
       builder: (context) {
         TextEditingController messageController = TextEditingController();
         return AlertDialog(
-          title: const Text('Signaler cette annonce'),
+          title: const Text('Signaler cet outil'), // Adjusted title
           content: TextField(
             controller: messageController,
             maxLines: 4,
@@ -228,14 +230,11 @@ class _BricolescreenState extends State<Bricolescreen> {
               centerTitle: false,
               titlePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               background: Hero(
-                // Use service ID for unique tag
-                tag: widget.service.id, // Changed tag to use ID
-                // Use Image.network for URLs coming from the backend
-                child: widget.service.imagePath.isNotEmpty
+                tag: widget.tool.id, // Use tool ID for unique tag
+                child: widget.tool.imagePath.isNotEmpty
                     ? Image.network(
-                        widget.service.imagePath, // Use imagePath from service object
+                        widget.tool.imagePath, // Use imagePath from tool object
                         fit: BoxFit.cover,
-                        // Add loading and error builders for network images
                         loadingBuilder: (context, child, loadingProgress) {
                           if (loadingProgress == null) return child;
                           return Center(
@@ -254,7 +253,7 @@ class _BricolescreenState extends State<Bricolescreen> {
                       )
                     : Container( // Placeholder if no image
                         color: Colors.grey[300],
-                        child: Icon(Icons.image_not_supported, color: Colors.grey[600]),
+                        child: Icon(Icons.construction, color: Colors.grey[600], size: 60), // Tool icon
                       ),
               ),
               stretchModes: const [StretchMode.zoomBackground],
@@ -275,9 +274,9 @@ class _BricolescreenState extends State<Bricolescreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // --- Service Name ---
+                  // --- Tool Name ---
                   Text(
-                    widget.service.name, // Correct: uses 'name' from model
+                    widget.tool.name, // Use tool name
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -285,42 +284,41 @@ class _BricolescreenState extends State<Bricolescreen> {
                   const SizedBox(height: 16.0),
 
                   // --- Info Section ---
-                  _buildInfoRow(
+                   _buildInfoRow( // Display Type (Category)
                     context,
-                    Icons.category_outlined,
-                    // Correct: uses 'categories' from model
-                    widget.service.categories.isNotEmpty ? widget.service.categories.join(" • ") : "Non spécifié",
+                    Icons.build_outlined, // Tool/Build icon
+                    widget.tool.typeAnnonce.isNotEmpty ? widget.tool.typeAnnonce : "Outil", // Use typeAnnonce
                   ),
                   _buildInfoRow(
                     context,
                     Icons.location_on_outlined,
-                    widget.service.localisation, // Correct: uses 'localisation'
+                    widget.tool.localisation.isNotEmpty ? widget.tool.localisation : "Non spécifiée",
                   ),
-                   _buildInfoRow( // Display creation date instead of duration
+                   _buildInfoRow( // Display Rental Duration
+                    context,
+                    Icons.calendar_month_outlined, // Calendar icon might be better
+                    widget.tool.dureeLocation.isNotEmpty ? "Durée: ${widget.tool.dureeLocation}" : "Durée non spécifiée",
+                  ),
+                   _buildInfoRow( // Display creation date
                     context,
                     Icons.calendar_today_outlined,
-                    "Publié le: ${_formatDate(widget.service.date_creation)}",
-                  ),
-                   _buildInfoRow( // Display expiration date
-                    context,
-                    Icons.event_busy_outlined,
-                    "Expire le: ${_formatDate(widget.service.date_exp)}",
+                     widget.tool.dateCreation.isNotEmpty ? "Ajouté le: ${_formatDate(widget.tool.dateCreation)}" : "Date d'ajout inconnue",
                   ),
                   _buildInfoRow(
                     context,
                     Icons.sell_outlined,
-                    // Correct: uses 'prix' from model
-                    "${widget.service.prix.toStringAsFixed(2)} DA",
+                    "${widget.tool.price.toStringAsFixed(2)} DA", // Use tool price
                   ),
                   const SizedBox(height: 24.0),
 
                   // --- Action Buttons ---
+                  // Keep these if users contact the tool owner directly
                   Row(
                     children: [
                       Expanded(
                         child: ElevatedButton.icon(
                           icon: const Icon(Icons.phone_outlined),
-                          label: const Text("Appelez-moi"),
+                          label: const Text("Appeler"), // Changed text slightly
                           onPressed: _callAction,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: primaryColor,
@@ -363,8 +361,7 @@ class _BricolescreenState extends State<Bricolescreen> {
                   ),
                   const SizedBox(height: 8.0),
                   Text(
-                    // Model doesn't have description, add placeholder or fetch later
-                    "Aucune description détaillée fournie pour ce service.",
+                    widget.tool.description.isNotEmpty ? widget.tool.description : "Aucune description fournie.", // Use tool description
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                           height: 1.5,
@@ -373,10 +370,10 @@ class _BricolescreenState extends State<Bricolescreen> {
                   const SizedBox(height: 24.0),
 
                   // --- Provider Info Section (Placeholder) ---
-                  // TODO: Add provider info
+                  // TODO: Add provider info if tools are linked to users
 
                   // --- Reviews Section (Placeholder) ---
-                  // TODO: Add reviews
+                  // TODO: Add reviews if applicable to tools
                 ],
               ),
             ),
