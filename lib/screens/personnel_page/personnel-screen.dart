@@ -1,6 +1,11 @@
+import 'package:flutter/material.dart';
+// Assuming these custom widgets exist and are styled according to the theme
 import '../../widgets/message_custom.dart';
 import '../../widgets/poste_custom.dart';
-import 'package:flutter/material.dart';
+// TODO: Import widget for displaying Annonces if different from PosteCustom
+
+// Define enum for view states
+enum ActivityView { messages, postes, annonces }
 
 class PersonnelScreen extends StatefulWidget {
   const PersonnelScreen({super.key});
@@ -10,178 +15,171 @@ class PersonnelScreen extends StatefulWidget {
 }
 
 class _PersonnelScreenState extends State<PersonnelScreen> {
-  String currentView = 'messages';
-  String userRole =
-      'simple'; // Change cela pour 'client' selon l'utilisateur connecté
+  ActivityView _currentView = ActivityView.messages; // Default view
+  String userRole = 'artisan'; // Change to 'client' or get from auth state
 
-  void toggleView(String view) {
-    setState(() {
-      currentView = view;
-    });
-  }
-
+  // --- Build Method ---
   @override
   Widget build(BuildContext context) {
+    // Get theme colors
+    final Color primaryColor = Theme.of(context).primaryColor;
+    final Color scaffoldBackgroundColor = Theme.of(context).scaffoldBackgroundColor;
+    final Color cardColor = Theme.of(context).cardColor;
+    final Color onPrimaryColor = Theme.of(context).colorScheme.onPrimary;
+    final Color onSurfaceColor = Theme.of(context).colorScheme.onSurface;
+
+    // Define segments based on user role
+    final List<ButtonSegment<ActivityView>> segments = [
+      const ButtonSegment<ActivityView>(
+          value: ActivityView.messages,
+          label: Text('Messages'),
+          icon: Icon(Icons.message_outlined)),
+      // Conditionally add Postes segment
+      if (userRole == 'artisan')
+        const ButtonSegment<ActivityView>(
+            value: ActivityView.postes,
+            label: Text('Postes'),
+            icon: Icon(Icons.grid_view_outlined)), // Or Icons.article_outlined
+      const ButtonSegment<ActivityView>(
+          value: ActivityView.annonces,
+          label: Text('Annonces'),
+          icon: Icon(Icons.list_alt_outlined)), // Or Icons.campaign_outlined
+    ];
+
     return Scaffold(
-      body: Stack(
+      backgroundColor: scaffoldBackgroundColor,
+      appBar: AppBar(
+        title: const Text('Mon Activité'), // Updated title
+        // No leading back button assuming this is a main tab screen
+        automaticallyImplyLeading: false,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor ?? cardColor,
+        foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
+        elevation: 1.0,
+        centerTitle: true,
+      ),
+      body: Column( // Use Column for layout
         children: [
-          Positioned.fill(
-            top: 60,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Container(
-              decoration: const BoxDecoration(color: Color(0XFFFAFBFA)),
-              padding: EdgeInsets.only(top: 8, left: 8, right: 8),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      buildToggleButton('messages', 'Messages'),
-                      const SizedBox(width: 5),
-                      if (userRole == 'artisan') ...[
-                        buildToggleButton('postes', 'Poste'),
-                        const SizedBox(width: 5),
-                      ],
-                      buildToggleButton('annonces', 'Annonce'),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (currentView == 'messages') ...[
-                            const Text(
-                              'Messages',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            MessageCustom(
-                              img: Image.asset('assets/images/exemple.png'),
-                              username: 'Aklil Youba',
-                              lastmssg: 'nouveaux messages',
-                            ),
-                            MessageCustom(
-                              username: 'Aklil Youba',
-                              lastmssg: 'nouveaux messages',
-                            ),
-                            // Ajoute ici les autres messages
-                          ] else if (currentView == 'postes' &&
-                              userRole == 'artisan') ...[
-                            const Text(
-                              'Postes',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            PosteCustom(
-                              img: Image.asset('assets/images/E02.png'),
-                              aime: '30',
-                              comment: '40',
-                            ),
-                            PosteCustom(
-                              img: Image.asset('assets/images/E02.png'),
-                              aime: '30',
-                              comment: '40',
-                            ),
-                            // Ajoute ici les autres postes
-                          ] else if (currentView == 'annonces') ...[
-                            const Text(
-                              'Annonces',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            PosteCustom(
-                              img: Image.asset('assets/images/E02.png'),
-                              aime: '30',
-                              comment: '40',
-                            ),
-                            PosteCustom(
-                              img: Image.asset('assets/images/E02.png'),
-                              aime: '30',
-                              comment: '40',
-                            ),
-                            // Ajoute ici les autres annonces
-                          ],
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+          // --- Toggle Buttons (SegmentedButton) ---
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+            child: SegmentedButton<ActivityView>(
+              segments: segments, // Use dynamically generated segments
+              selected: <ActivityView>{_currentView},
+              onSelectionChanged: (Set<ActivityView> newSelection) {
+                setState(() {
+                  // Ensure selection doesn't become empty if single select behavior is desired
+                  if (newSelection.isNotEmpty) {
+                     _currentView = newSelection.first;
+                  }
+                });
+              },
+              // Apply consistent styling from previous examples
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.resolveWith<Color?>((Set<MaterialState> states) {
+                  if (states.contains(MaterialState.selected)) {
+                    return primaryColor.withOpacity(0.85); // Slightly adjusted opacity maybe
+                  }
+                  return cardColor.withOpacity(0.5); // Lighter background for unselected
+                }),
+                foregroundColor: MaterialStateProperty.resolveWith<Color?>((Set<MaterialState> states) {
+                  if (states.contains(MaterialState.selected)) {
+                    return onPrimaryColor;
+                  }
+                  return onSurfaceColor.withOpacity(0.7); // Slightly muted unselected text
+                }),
+                shape: MaterialStateProperty.all<OutlinedBorder>(
+                   RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                      side: BorderSide(color: primaryColor.withOpacity(0.3)) // Subtle border
+                   )
+                ),
+                // Adjust padding if needed
+                // padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+                //   const EdgeInsets.symmetric(horizontal: 12, vertical: 8)
+                // ),
               ),
             ),
           ),
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              height: 60,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(20),
-                  bottomRight: Radius.circular(20),
-                ),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 2.0,
-                    spreadRadius: 1.0,
-                    offset: Offset(0, 0),
-                  ),
-                ],
-              ),
-              child: const Text(
-                'My Activity',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
+
+          // --- Dynamic Content Area ---
+          Expanded(
+            child: _buildCurrentViewContent(), // Helper method for content
           ),
         ],
       ),
     );
   }
 
-  // Bouton dynamique
-  Widget buildToggleButton(String viewKey, String label) {
-    bool isSelected = currentView == viewKey;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => toggleView(viewKey),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-          decoration: BoxDecoration(
-            color: isSelected ? const Color(0XFF102542) : Colors.transparent,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(width: 1.5, color: const Color(0XFF102542)),
-          ),
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: isSelected ? Colors.white : const Color(0XFF102542),
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
+  // --- Helper to build content based on selected view ---
+  Widget _buildCurrentViewContent() {
+    // Add padding around the list content
+    const EdgeInsets listPadding = EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0);
+
+    switch (_currentView) {
+      case ActivityView.messages:
+        return ListView( // Replace with ListView.builder for dynamic data
+          padding: listPadding,
+          children: const [
+            // TODO: Replace with actual message data & ensure MessageCustom is styled
+            MessageCustom(
+              // img: Image.asset('assets/images/exemple.png'), // Pass ImageProvider if needed
+              username: 'Aklil Youba',
+              lastmssg: 'nouveaux messages',
             ),
-          ),
-        ),
-      ),
-    );
+            SizedBox(height: 10),
+            MessageCustom(
+              username: 'Tahar Bensalem',
+              lastmssg: 'Ok, merci!',
+            ),
+             SizedBox(height: 10),
+             MessageCustom(
+              username: 'Amira Bouzid',
+              lastmssg: 'Vous êtes disponible demain?',
+            ),
+            // Add more messages...
+          ],
+        );
+
+      case ActivityView.postes:
+        // This case is only reachable if userRole == 'artisan'
+        return ListView( // Replace with ListView.builder for dynamic data
+           padding: listPadding,
+          children: const [
+            // TODO: Replace with actual post data & ensure PosteCustom is styled
+            PosteCustom(
+              // img: Image.asset('assets/images/E02.png'), // Pass ImageProvider if needed
+              aime: '30',
+              comment: '40',
+            ),
+             SizedBox(height: 12),
+            PosteCustom(
+              // img: Image.asset('assets/images/E03.png'),
+              aime: '55',
+              comment: '12',
+            ),
+            // Add more postes...
+          ],
+        );
+
+      case ActivityView.annonces:
+        return ListView( // Replace with ListView.builder for dynamic data
+           padding: listPadding,
+          children: const [
+            // TODO: Replace with actual annonce data & use appropriate widget (maybe PosteCustom or a new one)
+            PosteCustom( // Using PosteCustom as placeholder
+              // img: Image.asset('assets/images/E01.png'),
+              aime: '15', // Maybe represent views or saves?
+              comment: 'Bricole', // Maybe represent category?
+            ),
+             SizedBox(height: 12),
+            PosteCustom(
+              // img: Image.asset('assets/images/E04.png'),
+              aime: '42',
+              comment: 'Outil',
+            ),
+            // Add more annonces...
+          ],
+        );
+    }
   }
 }

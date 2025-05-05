@@ -1,42 +1,56 @@
+// lib/widgets2/horizontal_filter_bar.dart
 import 'package:flutter/material.dart';
 
 class HorizontalFilterBar extends StatelessWidget {
   final String selectedFilter;
   final Function(String) onFilterSelected;
-  const HorizontalFilterBar({ super.key, required this.selectedFilter, required this.onFilterSelected, });
+  final List<String> filters;
+
+  const HorizontalFilterBar({
+    super.key,
+    required this.selectedFilter,
+    required this.onFilterSelected,
+    required this.filters,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final List<String> filters = ['Bricole', 'Professionnel', 'Objet'];
-    // Use theme colors for better adaptability
+    // --- Use the theme colors provided by the user ---
     final Color selectedBgColor = Theme.of(context).colorScheme.primaryContainer.withOpacity(0.6);
     final Color selectedTextColor = Theme.of(context).colorScheme.onPrimaryContainer;
     final Color unselectedTextColor = Theme.of(context).colorScheme.onSurfaceVariant;
+    // Note: barBackgroundColor is not used as the outer container is transparent
 
     return Container(
-      height: 38, // Slightly shorter
-      // Removed outer grey background, rely on item backgrounds
+      height: 40, // Adjust height if necessary
+      // NO background color on the outer container
       child: Row(
         children: filters.map((filter) {
           final bool isSelected = selectedFilter == filter;
           return Expanded(
-            child: Padding( // Add padding for spacing between items
+            child: Padding(
+              // Padding provides spacing between the tappable areas
               padding: const EdgeInsets.symmetric(horizontal: 4.0),
-              child: InkWell(
+              child: GestureDetector( // Using GestureDetector to avoid ripple
                 onTap: () => onFilterSelected(filter),
-                borderRadius: BorderRadius.circular(8), // Match container radius
                 child: Container(
+                  // This container provides the background *only* for the selected item
+                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0), // Padding inside the item
                   decoration: BoxDecoration(
-                    color: isSelected ? selectedBgColor : Colors.transparent, // Transparent if not selected
-                    borderRadius: BorderRadius.circular(8),
+                    // Apply theme-based background color only if selected
+                    color: isSelected ? selectedBgColor : Colors.transparent,
+                    borderRadius: BorderRadius.circular(8), // Rounded corners
                   ),
                   child: Center(
                     child: Text(
                       filter,
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith( // Use labelLarge style
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        // Apply theme-based text colors
                         color: isSelected ? selectedTextColor : unselectedTextColor,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                      )
+                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500, // Selected is bolder
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                   ),
                 ),

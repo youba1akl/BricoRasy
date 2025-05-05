@@ -1,9 +1,17 @@
+// lib/widgets/search_form.dart
 import 'package:flutter/material.dart';
 
 class SearchForm extends StatefulWidget {
   final Function(String) onSearch;
   final VoidCallback? onFilterTap;
-  const SearchForm({ super.key, required this.onSearch, this.onFilterTap, });
+  final String hintText; // <-- Added: Make hintText configurable
+
+  const SearchForm({
+    super.key,
+    required this.onSearch,
+    this.onFilterTap,
+    this.hintText = "Search...", // <-- Added: Default hint text
+  });
 
   @override
   State<SearchForm> createState() => _SearchFormState();
@@ -31,7 +39,7 @@ class _SearchFormState extends State<SearchForm> {
           style: Theme.of(context).textTheme.bodyLarge,
           textInputAction: TextInputAction.search,
           decoration: InputDecoration(
-            hintText: "Search services or objects...",
+            hintText: widget.hintText, // <-- Use the hintText from the widget parameter
             hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(color: hintColor),
             contentPadding: const EdgeInsets.symmetric( vertical: 12, ),
             prefixIcon: Padding( padding: const EdgeInsets.only(left: 16.0, right: 10.0), child: Icon( Icons.search_rounded, color: iconColor, size: 22, ), ),
