@@ -1,3 +1,4 @@
+// lib/models/professional_service.dart
 import 'dart:convert';
 
 class ProfessionalService {
@@ -9,6 +10,8 @@ class ProfessionalService {
   final String localisation;
   final double prix;
   final List<String> categories;
+  final String? numtel;
+  final String? description;
 
   ProfessionalService({
     required this.id,
@@ -19,45 +22,44 @@ class ProfessionalService {
     required this.localisation,
     required this.prix,
     required this.categories,
+    this.numtel,
+    this.description,
   });
 
   factory ProfessionalService.fromJson(Map<String, dynamic> json) {
-    // 1) Safe string extraction with fallback
-    String safeString(String? s) => s ?? '';
+    String safeString(dynamic val) => val?.toString() ?? '';
 
-    final id = safeString(json['_id'] as String?);
-    final name = safeString(json['titre'] as String?);
-    final dateCreation = safeString(json['date_creation'] as String?);
-    final dateExpiration = safeString(json['date_expiration'] as String?);
-    final localisation = safeString(json['localisation'] as String?);
+    // Backend toJSON should provide 'id' (transformed from _id)
+    final id = safeString(json['id'] ?? json['_id']);
+    // Backend sends 'name'
+    final name = safeString(json['name']);
+    final dateCreation = safeString(json['date_creation']);
+    final dateExpiration = safeString(json['date_expiration']);
+    final localisation = safeString(json['localisation']);
+    final numtel = safeString(json['numtel']);
+    final description = safeString(json['description']); // Make sure your ProfessionalService class has this field
 
-    // 2) Price parsing (unchanged)
-    double prixValue;
-    final rawPrix = json['prix'];
-    if (rawPrix is num) {
+    double prixValue = 0.0;
+    final rawPrix = json['prix']; // Backend sends this as a string
+    if (rawPrix is String) {
+      prixValue = double.tryParse(rawPrix) ?? 0.0;
+    } else if (rawPrix is num) { // Fallback
       prixValue = rawPrix.toDouble();
-    } else if (rawPrix is Map<String, dynamic> &&
-        rawPrix.containsKey(r'$numberDecimal')) {
-      prixValue = double.tryParse(rawPrix[r'$numberDecimal'] as String) ?? 0.0;
-    } else {
-      prixValue = 0.0;
     }
 
-    // 3) Photos array safe parsing
-    String imgUrl = '';
+    String imgUrl = ''; // Default or placeholder
+    // Backend sends 'photo' as an array of FULL URLs
     if (json['photo'] is List) {
       final photos = (json['photo'] as List).whereType<String>().toList();
-      if (photos.isNotEmpty) {
-        imgUrl = 'http://10.0.2.2:5000/uploads/${photos.first}';
+      if (photos.isNotEmpty && photos.first.isNotEmpty) {
+        imgUrl = photos.first; // Use the first full URL directly
       }
     }
+    // if (imgUrl.isEmpty) imgUrl = 'assets/images/default_placeholder.png'; // Optional: local asset placeholder
 
-    // 4) Categories: the backend might send 'types' (an array) or a single 'type_annonce'
     List<String> categories = [];
-    if (json['types'] is List) {
+    if (json['types'] is List) { // Backend sends 'types'
       categories = (json['types'] as List).whereType<String>().toList();
-    } else if (json['type_annonce'] is String) {
-      categories = [json['type_annonce'] as String];
     }
 
     return ProfessionalService(
@@ -69,6 +71,23 @@ class ProfessionalService {
       localisation: localisation,
       prix: prixValue,
       categories: categories,
+      numtel: numtel,
+      description: description, // Assign the description
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'date_creation': dateCreation,
+      'date_expiration': dateExpiration,
+      'imagePath': imagePath,
+      'localisation': localisation,
+      'prix': prix,
+      'categories': categories,
+      'numtel': numtel,
+      'description': description,
+    };
   }
 }

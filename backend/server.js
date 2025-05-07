@@ -1,15 +1,17 @@
+// backend/server.js
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
-const connectDB = require("./config/db"); // importer
-const userRoutes = require("./routes/userRoutes"); // 👈 importer les routes utilisateur
-const serviceRoutes = require("./routes/serviceRoutes"); // 👈 importer les routes services
-const postRoutes = require("./routes/postRoutes"); // 👈 importer les routes postes
-const ratingRoutes = require("./routes/ratingRoutes"); // 👈 importer les routes rating
-const reportRoute = require("./routes/reportRoute"); // 👈 importer les routes report
-const annonceRoute=require("./routes/addanoo_route");
-const outilRoute=require('./routes/addanno_outil_route');
-const proRoute=require('./routes/add_anno_profRoute');
+const path = require("path"); // For serving static files
+const connectDB = require("./config/db");
+const userRoutes = require("./routes/userRoutes");
+const serviceRoutes = require("./routes/serviceRoutes");
+const postRoutes = require("./routes/postRoutes");
+const ratingRoutes = require("./routes/ratingRoutes");
+const reportRoute = require("./routes/reportRoute");
+const annonceRoute = require("./routes/addanoo_route");
+const outilRoute = require('./routes/addanno_outil_route');
+const proRoute = require('./routes/add_anno_profRoute');
 
 dotenv.config();
 
@@ -17,22 +19,24 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Connexion MongoDB
+// Serve static files from the "uploads" directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+
 connectDB();
 
-// Utiliser les routes report
 app.use("/api/reports", reportRoute);
-// Utiliser les routes poste
 app.use("/api/posts", postRoutes);
-// Utiliser les routes reting
 app.use("/api/ratings", ratingRoutes);
-// Utiliser les routes services
 app.use("/api/services", serviceRoutes);
-// Utiliser les routes utilisateur
 app.use("/api/users", userRoutes);
 
-//toutels les annonces ajout et geetter
-app.use("/api/annonce",annonceRoute,outilRoute,proRoute);
+// Combined route for different announcement types
+// The specific paths like '/professionnel' are defined within each router (proRoute, outilRoute, etc.)
+app.use("/api/annonce", annonceRoute); // Handles general /api/annonce paths (e.g., /bricole)
+app.use("/api/annonce", outilRoute);   // Handles /api/annonce/outil paths
+app.use("/api/annonce", proRoute);     // Handles /api/annonce/professionnel paths
+
 
 const PORT = process.env.PORT || 5000;
 
