@@ -131,9 +131,6 @@ const sendOTP = async (req, res) => {
   }
 };
 
-// @desc    Vérifier le code OTP
-// @route   POST /api/users/verify-otp
-// @access  Public
 const verifyOTP = (req, res) => {
   const { email, otp } = req.body;
 
@@ -152,4 +149,15 @@ const verifyOTP = (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, sendOTP, verifyOTP };
+
+const getArtisans = async (req, res) => {
+  try {
+    const artisans = await User.find({ role: "artisan" }).select("-password");
+    res.json(artisans);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erreur serveur lors de récupération." });
+  }
+};
+
+module.exports = { registerUser, loginUser, sendOTP, verifyOTP ,getArtisans};
