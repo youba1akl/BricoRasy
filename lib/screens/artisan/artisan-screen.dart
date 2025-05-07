@@ -1,16 +1,19 @@
 // lib/screens/artisan/artisan-screen.dart
 
 import 'dart:convert';
+import 'package:bricorasy/models/artisan.model.dart'; // Ensure correct path
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'package:bricorasy/models/artisan.model.dart';
-import 'package:bricorasy/screens/artisan/artisan-profil-screen.dart';
+// Import the profile screen for navigation
+import 'package:bricorasy/screens/artisan/artisan-profil-screen.dart'; // Ensure correct path
+
+// Import the styled widgets (adjust paths if necessary)
 import 'package:bricorasy/widgets2/search_form.dart';
-import 'package:bricorasy/widgets2/horizontal_filter_bar.dart';
+// import 'package:bricorasy/widgets2/horizontal_filter_bar.dart'; // REMOVE THIS IMPORT
+import 'package:bricorasy/widgets2/artisan_filter_bar.dart';     // <-- ADD THIS IMPORT
 import 'package:bricorasy/widgets/artisan_list_item.dart';
 
-/// Screen that displays a list of artisans with filtering and search features.
 class Artisantscreen extends StatefulWidget {
   const Artisantscreen({super.key});
 
@@ -19,121 +22,129 @@ class Artisantscreen extends StatefulWidget {
 }
 
 class _ArtisantscreenState extends State<Artisantscreen> {
-  // All loaded artisans from JSON
   List<Artisan> _artisans = [];
-
-  // Artisans after applying search and filter
   List<Artisan> _filteredArtisans = [];
-
-  // Control loading spinner
   bool _isLoading = true;
-
-  // Current selected filter (tab)
-  String _selectedFilter = 'Tout';
-
-  // Current search query
+  String _selectedFilter = 'Tout'; // Default filter: 'Tout' is one of our artisan filters
   String _searchQuery = '';
 
-  // Available filter options (used as tabs)
+  // This list is now consistent with ArtisanFilterBar, but ArtisanFilterBar has its own copy.
+  // You could remove this if ArtisanFilterBar is the sole source of truth for these strings.
+  // However, it can be useful to keep it here for validating _selectedFilter or other logic.
   final List<String> _artisanFilters = ['Tout', 'Bien Noté', 'Mal Noté'];
 
   @override
   void initState() {
     super.initState();
+    // Ensure _selectedFilter is a valid option from _artisanFilters
+    if (!_artisanFilters.contains(_selectedFilter)) {
+        _selectedFilter = _artisanFilters.first; // Default to 'Tout'
+    }
     _loadArtisans();
   }
 
-  /// Loads artisan data from a local JSON file and applies initial filters.
   Future<void> _loadArtisans() async {
+    // ... (keep existing _loadArtisans logic)
+    if (!mounted) return;
     setState(() => _isLoading = true);
     try {
-      final String jsonString = await rootBundle.loadString(
+      final String response = await rootBundle.loadString(
         'assets/json/artisan.json',
       );
-      final List<dynamic> jsonData = json.decode(jsonString);
-
-      setState(() {
-        _artisans = jsonData.map((e) => Artisan.fromJson(e)).toList();
-        _applyFilters(); // Apply filter to initialize the displayed list
-        _isLoading = false;
-      });
+      final List<dynamic> data = json.decode(response);
+      if (mounted) {
+        setState(() {
+          _artisans = data.map((e) => Artisan.fromJson(e)).toList();
+          _applyFilters();
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      debugPrint("Erreur de chargement des artisans: $e");
-      setState(() {
-        _isLoading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Erreur de chargement des artisans: $e"),
-          backgroundColor: Colors.red,
-        ),
-      );
+      print("Error loading artisans: $e");
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Erreur de chargement des artisans: $e"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
-  /// Applies both the current search and rating filters to the artisan list.
   void _applyFilters() {
-    List<Artisan> filtered = List.from(_artisans);
+    List<Artisan> tempFiltered = List.from(_artisans);
 
-    // Apply search filter
     if (_searchQuery.isNotEmpty) {
-      final query = _searchQuery.toLowerCase();
-      filtered =
-          filtered.where((artisan) {
-            return artisan.fullname.toLowerCase().contains(query) ||
-                artisan.job.toLowerCase().contains(query) ||
-                artisan.adress.toLowerCase().contains(query);
+      final queryLower = _searchQuery.toLowerCase();
+      tempFiltered =
+          tempFiltered.where((artisan) {
+            return artisan.fullname.toLowerCase().contains(queryLower) ||
+                artisan.job.toLowerCase().contains(queryLower) ||
+                artisan.adress.toLowerCase().contains(queryLower);
           }).toList();
     }
 
-    // Apply rating-based filter
+    // Now this logic will work correctly with selections from ArtisanFilterBar
     if (_selectedFilter == 'Bien Noté') {
-      filtered =
-          filtered.where((a) {
-            final rating =
-                double.tryParse(a.rating.replaceAll(',', '.')) ?? 0.0;
-            return rating >= 4.0;
+      tempFiltered =
+          tempFiltered.where((a) {
+            final ratingValue =
+                double.tryParse(a.rating.replaceAll(',', '.')) ??
+                0.0;
+            return ratingValue >= 4.0;
           }).toList();
+      print("Filtering: Bien Noté");
     } else if (_selectedFilter == 'Mal Noté') {
-      filtered =
-          filtered.where((a) {
-            final rating =
+      tempFiltered =
+          tempFiltered.where((a) {
+            final ratingValue =
                 double.tryParse(a.rating.replaceAll(',', '.')) ?? 0.0;
-            return rating < 3.0;
+            return ratingValue < 3.0;
           }).toList();
+      print("Filtering: Mal Noté");
     }
+    // 'Tout' implies no additional rating filter beyond the search query
 
-    setState(() {
-      _filteredArtisans = filtered;
-    });
+    if (mounted) {
+      setState(() {
+        _filteredArtisans = tempFiltered;
+      });
+    }
   }
 
-  /// Updates the search query and re-applies filters.
   void _handleSearch(String query) {
+    // ... (keep existing _handleSearch logic)
+    print("Searching artisans: $query");
     _searchQuery = query;
     _applyFilters();
   }
 
-  /// Toggles advanced filter options (not implemented yet).
   void _handleFilterTap() {
-    debugPrint("Advanced filter options tapped.");
+    // ... (keep existing _handleFilterTap logic)
+    print("Artisan filter icon tapped!");
   }
 
-  /// Updates the selected filter tab and refreshes the filtered list.
-  void _selectTab(String tab) {
+  void _handleFilterSelection(String filter) {
+    // This 'filter' will now be "Tout", "Bien Noté", or "Mal Noté"
+    if (!mounted) return;
+    print("Filter selected from ArtisanFilterBar: $filter");
     setState(() {
-      _selectedFilter = tab;
+      _selectedFilter = filter;
     });
-    _applyFilters(); // _applyFilters will run, but its conditions for 'Bien Noté'/'Mal Noté' might not match
+    _applyFilters();
   }
 
-  /// Navigates to the detailed profile of the selected artisan.
   void _navigateToProfile(Artisan artisan) {
-    Navigator.push(
+    // ... (keep existing _navigateToProfile logic)
+     Navigator.push(
       context,
       MaterialPageRoute(
         builder:
-            (_) => Artisanprofilscreen(
+            (context) => Artisanprofilscreen(
               username: artisan.fullname,
               job: artisan.job,
               like: artisan.like,
@@ -149,56 +160,63 @@ class _ArtisantscreenState extends State<Artisantscreen> {
   Widget build(BuildContext context) {
     final Color backgroundColor = Theme.of(context).scaffoldBackgroundColor;
 
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // --- Search Bar with filter icon ---
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16.0,
-                vertical: 12.0,
-              ),
-              child: SearchForm(
-                onSearch: _handleSearch,
-                onFilterTap: _handleFilterTap,
-              ),
+    return Container(
+      color: backgroundColor,
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(
+              top: 16.0,
+              left: 16.0,
+              right: 16.0,
+              bottom: 8.0,
             ),
-
-            // --- Horizontal tab filter bar ---
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: HorizontalFilterBar(
-                selectedFilter: _selectedFilter,
-                onFilterSelected: _selectTab,
-              ),
+            child: SearchForm(
+              onSearch: _handleSearch,
+              onFilterTap: _handleFilterTap,
             ),
-
-            // --- Artisan list content or loading indicator ---
-            Expanded(
-              child:
-                  _isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : _filteredArtisans.isEmpty
-                      ? const Center(child: Text("Aucun artisan trouvé."))
-                      : ListView.builder(
-                        padding: const EdgeInsets.all(16.0),
-                        itemCount: _filteredArtisans.length,
-                        itemBuilder: (context, index) {
-                          final artisan = _filteredArtisans[index];
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 12.0),
-                            child: ArtisanListItem(
-                              artisan: artisan,
-                              onTap: () => _navigateToProfile(artisan),
-                            ),
-                          );
-                        },
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 8.0,
+            ),
+            child: ArtisanFilterBar( // <-- USE THE NEW WIDGET HERE
+              selectedFilter: _selectedFilter,
+              onFilterSelected: _handleFilterSelection,
+            ),
+          ),
+          Expanded(
+            child:
+                _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _filteredArtisans.isEmpty
+                    ? const Center(
+                      child: Text("Aucun artisan trouvé."),
+                    )
+                    : ListView.builder(
+                      padding: const EdgeInsets.only(
+                        left: 16.0,
+                        right: 16.0,
+                        bottom: 16.0,
+                        top: 8.0,
                       ),
-            ),
-          ],
-        ),
+                      itemCount: _filteredArtisans.length,
+                      itemBuilder: (context, index) {
+                        final artisan = _filteredArtisans[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(
+                            bottom: 12.0,
+                          ),
+                          child: ArtisanListItem(
+                            artisan: artisan,
+                            onTap: () => _navigateToProfile(artisan),
+                          ),
+                        );
+                      },
+                    ),
+          ),
+        ],
       ),
     );
   }
