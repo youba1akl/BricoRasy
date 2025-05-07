@@ -31,6 +31,8 @@ class _ArtisantscreenState extends State<Artisantscreen> {
   String _searchQuery = ''; // Store current search query
 
   // Define filter options specifically for this screen
+  // This list is currently NOT being used to populate the HorizontalFilterBar
+  // due to the constraint of not changing HorizontalFilterBar.
   final List<String> _artisanFilters = ['Tout', 'Bien Noté', 'Mal Noté'];
 
   @override
@@ -43,7 +45,6 @@ class _ArtisantscreenState extends State<Artisantscreen> {
     if (!mounted) return;
     setState(() => _isLoading = true);
     try {
-      // Ensure asset path is correct and declared in pubspec.yaml
       final String response = await rootBundle.loadString(
         'assets/json/artisan.json',
       );
@@ -51,7 +52,7 @@ class _ArtisantscreenState extends State<Artisantscreen> {
       if (mounted) {
         setState(() {
           _artisans = data.map((e) => Artisan.fromJson(e)).toList();
-          _applyFilters(); // Apply initial filter (which includes search query if any)
+          _applyFilters();
           _isLoading = false;
         });
       }
@@ -71,11 +72,9 @@ class _ArtisantscreenState extends State<Artisantscreen> {
     }
   }
 
-  // --- Filtering Logic ---
   void _applyFilters() {
     List<Artisan> tempFiltered = List.from(_artisans);
 
-    // Apply search query filter
     if (_searchQuery.isNotEmpty) {
       final queryLower = _searchQuery.toLowerCase();
       tempFiltered =
@@ -86,18 +85,19 @@ class _ArtisantscreenState extends State<Artisantscreen> {
           }).toList();
     }
 
+    // IMPORTANT: This logic relies on _selectedFilter being "Bien Noté" or "Mal Noté".
+    // If HorizontalFilterBar sets _selectedFilter to "Bricole", "Professionnel", or "Objet",
+    // this specific rating filter logic will not be triggered as intended by clicks on that bar.
     if (_selectedFilter == 'Bien Noté') {
-      // Example: Keep artisans with rating >= 4.0 (adjust threshold)
       tempFiltered =
           tempFiltered.where((a) {
             final ratingValue =
                 double.tryParse(a.rating.replaceAll(',', '.')) ??
-                0.0; // Handle comma decimal
+                0.0;
             return ratingValue >= 4.0;
           }).toList();
       print("Filtering: Bien Noté");
     } else if (_selectedFilter == 'Mal Noté') {
-      // Example: Keep artisans with rating < 3.0 (adjust threshold)
       tempFiltered =
           tempFiltered.where((a) {
             final ratingValue =
@@ -106,7 +106,6 @@ class _ArtisantscreenState extends State<Artisantscreen> {
           }).toList();
       print("Filtering: Mal Noté");
     }
-    // 'Tout' doesn't require filtering by rating
 
     if (mounted) {
       setState(() {
@@ -115,29 +114,27 @@ class _ArtisantscreenState extends State<Artisantscreen> {
     }
   }
 
-  // --- Callbacks ---
   void _handleSearch(String query) {
     print("Searching artisans: $query");
-    // Update search query state and re-apply filters
     _searchQuery = query;
     _applyFilters();
   }
 
   void _handleFilterTap() {
     print("Artisan filter icon tapped!");
-    // TODO: Implement advanced filter options popup/dialog if needed
+    // Potentially show a different filter UI that uses _artisanFilters
   }
 
   void _handleFilterSelection(String filter) {
     if (!mounted) return;
-    // Update filter state and re-apply filters
+    // 'filter' will be "Bricole", "Professionnel", or "Objet" coming from HorizontalFilterBar
+    print("Filter selected from HorizontalFilterBar: $filter");
     setState(() {
-      _selectedFilter = filter;
+      _selectedFilter = filter; // _selectedFilter now holds "Bricole", "Professionnel", or "Objet"
     });
-    _applyFilters();
+    _applyFilters(); // _applyFilters will run, but its conditions for 'Bien Noté'/'Mal Noté' might not match
   }
 
-  // --- Navigation Handler ---
   void _navigateToProfile(Artisan artisan) {
     Navigator.push(
       context,
@@ -149,24 +146,20 @@ class _ArtisantscreenState extends State<Artisantscreen> {
               like: artisan.like,
               loc: artisan.adress,
               rating: artisan.rating,
-              imgProvider: AssetImage(artisan.image), // Pass AssetImage
+              imgProvider: AssetImage(artisan.image),
             ),
       ),
     );
   }
 
-  // --- Build Method ---
   @override
   Widget build(BuildContext context) {
     final Color backgroundColor = Theme.of(context).scaffoldBackgroundColor;
 
-    // This widget returns a Column, assuming it's placed within a Scaffold's body
-    // by a parent widget (like a main screen with BottomNavigationBar).
     return Container(
-      color: backgroundColor, // Apply background color
+      color: backgroundColor,
       child: Column(
         children: [
-          // --- Search Bar Area ---
           Padding(
             padding: const EdgeInsets.only(
               top: 16.0,
@@ -179,8 +172,6 @@ class _ArtisantscreenState extends State<Artisantscreen> {
               onFilterTap: _handleFilterTap,
             ),
           ),
-
-          // --- Filter Bar ---
           Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: 16.0,
@@ -189,11 +180,9 @@ class _ArtisantscreenState extends State<Artisantscreen> {
             child: HorizontalFilterBar(
               selectedFilter: _selectedFilter,
               onFilterSelected: _handleFilterSelection,
-              filters: _artisanFilters, // Pass the specific artisan filters
+              // filters: _artisanFilters, // <-- REMOVED THIS LINE TO FIX THE ERROR
             ),
           ),
-
-          // --- Loading or List Area ---
           Expanded(
             child:
                 _isLoading
@@ -201,7 +190,7 @@ class _ArtisantscreenState extends State<Artisantscreen> {
                     : _filteredArtisans.isEmpty
                     ? const Center(
                       child: Text("Aucun artisan trouvé."),
-                    ) // Empty state message
+                    )
                     : ListView.builder(
                       padding: const EdgeInsets.only(
                         left: 16.0,
@@ -210,15 +199,14 @@ class _ArtisantscreenState extends State<Artisantscreen> {
                         top: 8.0,
                       ),
                       itemCount:
-                          _filteredArtisans.length, // Use filtered list length
+                          _filteredArtisans.length,
                       itemBuilder: (context, index) {
                         final artisan =
-                            _filteredArtisans[index]; // Use filtered list item
-                        // Use the new ArtisanListItem widget
+                            _filteredArtisans[index];
                         return Padding(
                           padding: const EdgeInsets.only(
                             bottom: 12.0,
-                          ), // Spacing between items
+                          ),
                           child: ArtisanListItem(
                             artisan: artisan,
                             onTap: () => _navigateToProfile(artisan),

@@ -5,7 +5,7 @@ import 'package:bricorasy/models/professional_service.dart';
 import 'package:bricorasy/models/dummy_tool.dart';
 
 class apiservice {
-  static const _baseUrl = 'http://10.0.2.2:5000';
+  static const _baseUrl = 'http://127.0.0.1:5000';
 
   static Future<List<BricoleService>> fetchServices() async {
     final uri = Uri.parse('$_baseUrl/api/annonce/bricole');
@@ -23,7 +23,7 @@ class apiservice {
 }
 
 class apiService_pro {
-  static const _baseUrl = 'http://10.0.2.2:5000';
+  static const _baseUrl = 'http://127.0.0.1:5000';
   static Future<List<ProfessionalService>> fetchServicePro() async {
     final uri = Uri.parse('$_baseUrl/api/annonce/professionnel');
     final reponse = await http.get(uri);
@@ -40,7 +40,7 @@ class apiService_pro {
 }
 
 class apiService_outil {
-  static const _baseUrl = 'http://10.0.2.2:5000';
+  static const _baseUrl = 'http://127.0.0.1:5000';
 
   static Future<List<DummyTool>> fetchTools() async {
     final uri = Uri.parse('$_baseUrl/api/annonce/outil');
