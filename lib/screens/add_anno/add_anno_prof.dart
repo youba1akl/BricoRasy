@@ -151,12 +151,12 @@ class _AddAnnoProfState extends State<AddAnnoProf> {
       );
       return;
     }
-     if (_images.isEmpty) {
+  /*   if (_images.isEmpty) {
        ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Veuillez ajouter au moins une image.'), backgroundColor: Colors.orange),
       );
       return;
-    }
+    }*/
 
     setState(() => _submitting = true);
 

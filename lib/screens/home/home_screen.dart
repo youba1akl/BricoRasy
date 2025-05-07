@@ -8,19 +8,22 @@ import 'package:bricorasy/models/professional_service.dart';
 import 'package:bricorasy/models/dummy_tool.dart';
 
 // Widget Imports (ensure paths are correct)
-import 'package:bricorasy/widgets2/search_form.dart';
-import 'package:bricorasy/widgets2/horizontal_filter_bar.dart';
+import 'package:bricorasy/widgets2/search_form.dart'; // Assuming this is widgets2/home/search_form.dart based on previous context
+import 'package:bricorasy/widgets2/horizontal_filter_bar.dart'; // Assuming this is widgets2/home/horizontal_filter_bar.dart
 import 'package:bricorasy/widgets2/home/service_list_view.dart';
 import 'package:bricorasy/widgets2/home/tool_grid_view.dart';
 import 'package:bricorasy/widgets2/home/proService_listView.dart';
 
 // Service Imports (ensure these are correctly defined and initialized)
-import 'package:bricorasy/services/HomePage_service.dart';
+// Make sure these apiService instances are initialized somewhere accessible, or pass them in.
+// For simplicity, assuming they are global or accessible.
+import 'package:bricorasy/services/HomePage_service.dart'; // Contains apiservice, apiService_pro, apiService_outil
 
 // Import the detail screens (ensure paths are correct)
 import 'package:bricorasy/screens/home/bricole-screen.dart';
 import 'package:bricorasy/screens/tool_detail/tool_detail_screen.dart';
-// TODO: Add import for Professional Service Detail Screen if you have one
+// --- Import for Professional Service Detail Screen ---
+import 'package:bricorasy/screens/home/professional_detail_screen.dart';
 
 // Define the background color (or get from theme)
 const kAppBackgroundColor = Color(0xFFFFF0E8); // Example: Light Pinkish-Beige
@@ -34,10 +37,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String _selectedFilter = 'Bricole'; // Default filter
-
-  // --- MODIFIED: Renamed 'Objet' to 'Outils' ---
   final List<String> _homeFilters = const ['Bricole', 'Professionnel', 'Outils'];
-  // --- End Modification ---
 
   // --- Callbacks ---
   void _selectFilter(String filter) {
@@ -51,12 +51,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _onSearchSubmitted(String query) {
     print('Searching for: "$query" in $_selectedFilter context');
-    // TODO: Implement search logic
+    // TODO: Implement search logic based on query and _selectedFilter
+    // This might involve re-fetching data with search parameters.
   }
 
   void _onFilterIconTap() {
     print("Filter icon tapped!");
     // TODO: Implement advanced filter options popup/dialog
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Fonctionnalité de filtre avancé non implémentée.")),
+    );
   }
 
   // --- Navigation Callbacks ---
@@ -65,17 +69,21 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
+        // Assuming Bricolescreen also takes the full service object
         builder: (_) => Bricolescreen(service: service),
       ),
     );
   }
 
    void _onProfessionalServiceTapped(ProfessionalService service) {
-    print("Professional Service tapped: ${service.name}");
-    // TODO: Navigate to Professional Service Detail Screen
-     ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Navigation vers détail Pro non implémentée.'))
-     );
+    print("Professional Service tapped: ${service.name}, ID: ${service.id}");
+    // --- MODIFIED: Navigate to ProfessionalDetailScreen passing service.id ---
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProfessionalDetailScreen(serviceId: service.id), // Pass the service.id
+      ),
+    );
   }
 
   void _onToolTapped(DummyTool tool) {
@@ -83,6 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
+        // Assuming ToolDetailScreen also takes the full tool object
         builder: (_) => ToolDetailScreen(tool: tool),
       ),
     );
@@ -91,12 +100,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // --- Helper to build the main content area based on filter ---
   Widget _buildCurrentContent() {
-    // --- MODIFIED: Changed case label to 'Outils' ---
+    // Ensure your API service instances (apiservice, apiService_pro, apiService_outil)
+    // are correctly initialized and accessible.
+    // For example, they might be instantiated in initState or be singletons.
+    // final HomePageService apiService = HomePageService(); // Or however you access them
+
     switch (_selectedFilter) {
-      case 'Outils': // Changed from 'Objet'
-    // --- End Modification ---
+      case 'Outils':
         return FutureBuilder<List<DummyTool>>(
-          future: apiService_outil.fetchTools(),
+          future: apiService_outil.fetchTools(), // From HomePage_service.dart
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
@@ -115,7 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       case 'Professionnel':
         return FutureBuilder<List<ProfessionalService>>(
-          future: apiService_pro.fetchServicePro(),
+          future: apiService_pro.fetchServicePro(), // From HomePage_service.dart
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
@@ -136,9 +148,9 @@ class _HomeScreenState extends State<HomeScreen> {
         );
 
       case 'Bricole':
-      default: // Default to Bricole
+      default:
         return FutureBuilder<List<BricoleService>>(
-          future: apiservice.fetchServices(),
+          future: apiservice.fetchServices(), // From HomePage_service.dart
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
@@ -163,43 +175,37 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final Color backgroundColor =
-        Theme.of(context).scaffoldBackgroundColor ?? kAppBackgroundColor;
+        Theme.of(context).scaffoldBackgroundColor; // Prefer theme color
 
     return Scaffold(
       backgroundColor: backgroundColor,
       body: SafeArea(
         child: Column(
           children: [
-            // --- Search Bar Area ---
             Padding(
               padding: const EdgeInsets.only(
                 top: 16.0, left: 16.0, right: 16.0, bottom: 8.0
               ),
-              child: SearchForm(
+              child: SearchForm( // From widgets2/home/search_form.dart
                 onSearch: _onSearchSubmitted,
                 onFilterTap: _onFilterIconTap,
-                hintText: "Rechercher services ou outils...", // Updated hint
+                hintText: "Rechercher services ou outils...",
               ),
             ),
-
-            // --- Filter Bar Area ---
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: HorizontalFilterBar(
+              child: HorizontalFilterBar( // From widgets2/home/horizontal_filter_bar.dart
                 selectedFilter: _selectedFilter,
                 onFilterSelected: _selectFilter,
-                filters: _homeFilters, // Pass the updated filters list
+                filters: _homeFilters,
               ),
             ),
-
-            // --- Dynamic Content Area ---
             Expanded(
               child: _buildCurrentContent(),
             ),
           ],
         ),
       ),
-      // bottomNavigationBar: BottomNavigationBar(...), // Add if needed
     );
   }
 }
