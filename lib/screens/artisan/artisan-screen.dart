@@ -1,21 +1,16 @@
 // lib/screens/artisan/artisan-screen.dart
 
 import 'dart:convert';
-import 'package:bricorasy/models/artisan.model.dart'; // Ensure correct path
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-// Import the profile screen for navigation
-import 'package:bricorasy/screens/artisan/artisan-profil-screen.dart'; // Ensure correct path
-
-// Import the styled widgets (adjust paths if necessary)
+import 'package:bricorasy/models/artisan.model.dart';
+import 'package:bricorasy/screens/artisan/artisan-profil-screen.dart';
 import 'package:bricorasy/widgets2/search_form.dart';
 import 'package:bricorasy/widgets2/horizontal_filter_bar.dart';
-import 'package:bricorasy/widgets/artisan_list_item.dart'; // Import the new list item
+import 'package:bricorasy/widgets/artisan_list_item.dart';
 
-// Assuming kAppBackgroundColor is defined elsewhere or use theme
-// const kAppBackgroundColor = Color(0xFFFFF0E8);
-
+/// Screen that displays a list of artisans with filtering and search features.
 class Artisantscreen extends StatefulWidget {
   const Artisantscreen({super.key});
 
@@ -24,13 +19,22 @@ class Artisantscreen extends StatefulWidget {
 }
 
 class _ArtisantscreenState extends State<Artisantscreen> {
-  List<Artisan> _artisans = []; // Original list loaded from JSON
-  List<Artisan> _filteredArtisans = []; // List displayed after filtering
-  bool _isLoading = true;
-  String _selectedFilter = 'Tout'; // Default filter state
-  String _searchQuery = ''; // Store current search query
+  // All loaded artisans from JSON
+  List<Artisan> _artisans = [];
 
-  // Define filter options specifically for this screen
+  // Artisans after applying search and filter
+  List<Artisan> _filteredArtisans = [];
+
+  // Control loading spinner
+  bool _isLoading = true;
+
+  // Current selected filter (tab)
+  String _selectedFilter = 'Tout';
+
+  // Current search query
+  String _searchQuery = '';
+
+  // Available filter options (used as tabs)
   final List<String> _artisanFilters = ['Tout', 'Bien Noté', 'Mal Noté'];
 
   @override
@@ -39,195 +43,162 @@ class _ArtisantscreenState extends State<Artisantscreen> {
     _loadArtisans();
   }
 
+  /// Loads artisan data from a local JSON file and applies initial filters.
   Future<void> _loadArtisans() async {
-    if (!mounted) return;
     setState(() => _isLoading = true);
     try {
-      // Ensure asset path is correct and declared in pubspec.yaml
-      final String response = await rootBundle.loadString(
+      final String jsonString = await rootBundle.loadString(
         'assets/json/artisan.json',
       );
-      final List<dynamic> data = json.decode(response);
-      if (mounted) {
-        setState(() {
-          _artisans = data.map((e) => Artisan.fromJson(e)).toList();
-          _applyFilters(); // Apply initial filter (which includes search query if any)
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      print("Error loading artisans: $e");
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Erreur de chargement des artisans: $e"),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
+      final List<dynamic> jsonData = json.decode(jsonString);
 
-  // --- Filtering Logic ---
-  void _applyFilters() {
-    List<Artisan> tempFiltered = List.from(_artisans);
-
-    // Apply search query filter
-    if (_searchQuery.isNotEmpty) {
-      final queryLower = _searchQuery.toLowerCase();
-      tempFiltered =
-          tempFiltered.where((artisan) {
-            return artisan.fullname.toLowerCase().contains(queryLower) ||
-                artisan.job.toLowerCase().contains(queryLower) ||
-                artisan.adress.toLowerCase().contains(queryLower);
-          }).toList();
-    }
-
-    if (_selectedFilter == 'Bien Noté') {
-      // Example: Keep artisans with rating >= 4.0 (adjust threshold)
-      tempFiltered =
-          tempFiltered.where((a) {
-            final ratingValue =
-                double.tryParse(a.rating.replaceAll(',', '.')) ??
-                0.0; // Handle comma decimal
-            return ratingValue >= 4.0;
-          }).toList();
-      print("Filtering: Bien Noté");
-    } else if (_selectedFilter == 'Mal Noté') {
-      // Example: Keep artisans with rating < 3.0 (adjust threshold)
-      tempFiltered =
-          tempFiltered.where((a) {
-            final ratingValue =
-                double.tryParse(a.rating.replaceAll(',', '.')) ?? 0.0;
-            return ratingValue < 3.0;
-          }).toList();
-      print("Filtering: Mal Noté");
-    }
-    // 'Tout' doesn't require filtering by rating
-
-    if (mounted) {
       setState(() {
-        _filteredArtisans = tempFiltered;
+        _artisans = jsonData.map((e) => Artisan.fromJson(e)).toList();
+        _applyFilters(); // Apply filter to initialize the displayed list
+        _isLoading = false;
       });
+    } catch (e) {
+      debugPrint("Erreur de chargement des artisans: $e");
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Erreur de chargement des artisans: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
-  // --- Callbacks ---
+  /// Applies both the current search and rating filters to the artisan list.
+  void _applyFilters() {
+    List<Artisan> filtered = List.from(_artisans);
+
+    // Apply search filter
+    if (_searchQuery.isNotEmpty) {
+      final query = _searchQuery.toLowerCase();
+      filtered =
+          filtered.where((artisan) {
+            return artisan.fullname.toLowerCase().contains(query) ||
+                artisan.job.toLowerCase().contains(query) ||
+                artisan.adress.toLowerCase().contains(query);
+          }).toList();
+    }
+
+    // Apply rating-based filter
+    if (_selectedFilter == 'Bien Noté') {
+      filtered =
+          filtered.where((a) {
+            final rating =
+                double.tryParse(a.rating.replaceAll(',', '.')) ?? 0.0;
+            return rating >= 4.0;
+          }).toList();
+    } else if (_selectedFilter == 'Mal Noté') {
+      filtered =
+          filtered.where((a) {
+            final rating =
+                double.tryParse(a.rating.replaceAll(',', '.')) ?? 0.0;
+            return rating < 3.0;
+          }).toList();
+    }
+
+    setState(() {
+      _filteredArtisans = filtered;
+    });
+  }
+
+  /// Updates the search query and re-applies filters.
   void _handleSearch(String query) {
-    print("Searching artisans: $query");
-    // Update search query state and re-apply filters
     _searchQuery = query;
     _applyFilters();
   }
 
+  /// Toggles advanced filter options (not implemented yet).
   void _handleFilterTap() {
-    print("Artisan filter icon tapped!");
-    // TODO: Implement advanced filter options popup/dialog if needed
+    debugPrint("Advanced filter options tapped.");
   }
 
-  void _handleFilterSelection(String filter) {
-    if (!mounted) return;
-    // Update filter state and re-apply filters
+  /// Updates the selected filter tab and refreshes the filtered list.
+  void _selectTab(String tab) {
     setState(() {
-      _selectedFilter = filter;
+      _selectedFilter = tab;
     });
     _applyFilters();
   }
 
-  // --- Navigation Handler ---
+  /// Navigates to the detailed profile of the selected artisan.
   void _navigateToProfile(Artisan artisan) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder:
-            (context) => Artisanprofilscreen(
+            (_) => Artisanprofilscreen(
               username: artisan.fullname,
               job: artisan.job,
               like: artisan.like,
               loc: artisan.adress,
               rating: artisan.rating,
-              imgProvider: AssetImage(artisan.image), // Pass AssetImage
+              imgProvider: AssetImage(artisan.image),
             ),
       ),
     );
   }
 
-  // --- Build Method ---
   @override
   Widget build(BuildContext context) {
     final Color backgroundColor = Theme.of(context).scaffoldBackgroundColor;
 
-    // This widget returns a Column, assuming it's placed within a Scaffold's body
-    // by a parent widget (like a main screen with BottomNavigationBar).
-    return Container(
-      color: backgroundColor, // Apply background color
-      child: Column(
-        children: [
-          // --- Search Bar Area ---
-          Padding(
-            padding: const EdgeInsets.only(
-              top: 16.0,
-              left: 16.0,
-              right: 16.0,
-              bottom: 8.0,
+    return Scaffold(
+      backgroundColor: backgroundColor,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // --- Search Bar with filter icon ---
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 12.0,
+              ),
+              child: SearchForm(
+                onSearch: _handleSearch,
+                onFilterTap: _handleFilterTap,
+              ),
             ),
-            child: SearchForm(
-              onSearch: _handleSearch,
-              onFilterTap: _handleFilterTap,
-            ),
-          ),
 
-          // --- Filter Bar ---
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
-              vertical: 8.0,
+            // --- Horizontal tab filter bar ---
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: HorizontalFilterBar(
+                selectedFilter: _selectedFilter,
+                onFilterSelected: _selectTab,
+              ),
             ),
-            child: HorizontalFilterBar(
-              selectedFilter: _selectedFilter,
-              onFilterSelected: _handleFilterSelection,
-              filters: _artisanFilters, // Pass the specific artisan filters
-            ),
-          ),
 
-          // --- Loading or List Area ---
-          Expanded(
-            child:
-                _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _filteredArtisans.isEmpty
-                    ? const Center(
-                      child: Text("Aucun artisan trouvé."),
-                    ) // Empty state message
-                    : ListView.builder(
-                      padding: const EdgeInsets.only(
-                        left: 16.0,
-                        right: 16.0,
-                        bottom: 16.0,
-                        top: 8.0,
+            // --- Artisan list content or loading indicator ---
+            Expanded(
+              child:
+                  _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : _filteredArtisans.isEmpty
+                      ? const Center(child: Text("Aucun artisan trouvé."))
+                      : ListView.builder(
+                        padding: const EdgeInsets.all(16.0),
+                        itemCount: _filteredArtisans.length,
+                        itemBuilder: (context, index) {
+                          final artisan = _filteredArtisans[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12.0),
+                            child: ArtisanListItem(
+                              artisan: artisan,
+                              onTap: () => _navigateToProfile(artisan),
+                            ),
+                          );
+                        },
                       ),
-                      itemCount:
-                          _filteredArtisans.length, // Use filtered list length
-                      itemBuilder: (context, index) {
-                        final artisan =
-                            _filteredArtisans[index]; // Use filtered list item
-                        // Use the new ArtisanListItem widget
-                        return Padding(
-                          padding: const EdgeInsets.only(
-                            bottom: 12.0,
-                          ), // Spacing between items
-                          child: ArtisanListItem(
-                            artisan: artisan,
-                            onTap: () => _navigateToProfile(artisan),
-                          ),
-                        );
-                      },
-                    ),
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
