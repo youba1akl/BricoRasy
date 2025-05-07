@@ -25,7 +25,7 @@ class _HomeScaffoldState extends State<HomeScaffold> {
     Artisantscreen(),
     AddAnnoScreen(),
     PersonnelScreen(),
-    Profilscreen(),
+   Profilscreen()
   ];
 
   @override
