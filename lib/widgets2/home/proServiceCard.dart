@@ -31,13 +31,11 @@ class ServiceInfoBigCardProf extends StatelessWidget {
       ),
       child: InkWell(
         onTap: press,
-        borderRadius: BorderRadius.circular(16), // Match container radius
+        borderRadius: BorderRadius.circular(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ServiceImageDisplay(
-              imagePath: service.imagePath,
-            ), // Use the widget below
+            ServiceImageDisplay(imagePath: service.imagePath),
             Padding(
               padding: const EdgeInsets.only(
                 top: 10.0,
@@ -51,23 +49,22 @@ class ServiceInfoBigCardProf extends StatelessWidget {
                   Text(
                     service.name,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      height: 1.3,
-                    ),
+                          fontWeight: FontWeight.w600,
+                          height: 1.3,
+                        ),
                   ),
                   const SizedBox(height: 5),
-                  CategoriesDisplay(
-                    categories: service.categories,
-                  ), // Use the widget below
+                  CategoriesDisplay(categories: service.categories),
                   const SizedBox(height: 8),
                   Row(
                     children: [
                       const SizedBox(width: 15),
                       Text(
                         service.prix.toString(),
-                        style: Theme.of(
-                          context,
-                        ).textTheme.bodySmall?.copyWith(color: mutedTextColor),
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(color: mutedTextColor),
                       ),
                       const SizedBox(width: 15),
                       Text(service.localisation),
@@ -87,13 +84,14 @@ class ServiceInfoBigCardProf extends StatelessWidget {
 class CategoriesDisplay extends StatelessWidget {
   final List<String> categories;
   const CategoriesDisplay({super.key, required this.categories});
+
   @override
   Widget build(BuildContext context) {
     return Text(
-      categories.join("  •  "), // Slightly more spacing for separator
+      categories.join("  •  "),
       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-        color: Theme.of(context).colorScheme.onSurfaceVariant,
-      ),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
     );
@@ -104,36 +102,43 @@ class CategoriesDisplay extends StatelessWidget {
 class ServiceImageDisplay extends StatelessWidget {
   final String imagePath;
   const ServiceImageDisplay({super.key, required this.imagePath});
+
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
-      aspectRatio: 1.8, // Consistent aspect ratio
+      aspectRatio: 1.8,
       child: ClipRRect(
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(16),
-        ), // Round top corners to match card
-        child: Image.asset(
-          imagePath,
-          fit: BoxFit.cover,
-          errorBuilder:
-              (context, error, stackTrace) => Container(
-                // Improved error display
-                decoration: BoxDecoration(
-                  color:
-                      Theme.of(context)
-                          .colorScheme
-                          .surfaceContainerHighest, // Use a theme color for background
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(16),
-                  ),
-                ),
-                child: Icon(
-                  Icons.image_not_supported_outlined,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  size: 40,
-                ),
-              ),
-        ),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        child: imagePath.isNotEmpty
+            ? Image.network(
+                imagePath,
+                fit: BoxFit.cover,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Center(
+                    child: CircularProgressIndicator(
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded /
+                              (loadingProgress.expectedTotalBytes ?? 1)
+                          : null,
+                    ),
+                  );
+                },
+                errorBuilder: (context, error, stackTrace) =>
+                    _placeholder(context),
+              )
+            : _placeholder(context),
+      ),
+    );
+  }
+
+  Widget _placeholder(BuildContext context) {
+    return Container(
+      color: Theme.of(context).colorScheme.surfaceVariant,
+      child: Icon(
+        Icons.image_not_supported_outlined,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+        size: 40,
       ),
     );
   }

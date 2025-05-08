@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:bricorasy/models/bricole_service.dart'; // Import the model
+import 'package:bricorasy/models/bricole_service.dart'; // Your model import
 
-// --- Main Service Card Widget ---
+/// Main Service Card Widget
 class ServiceInfoBigCard extends StatelessWidget {
   final BricoleService service;
   final VoidCallback press;
+
   const ServiceInfoBigCard({
     super.key,
     required this.service,
@@ -13,9 +14,9 @@ class ServiceInfoBigCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color mutedTextColor = Theme.of(context).colorScheme.onSurfaceVariant;
-    final Color cardBackgroundColor = Theme.of(context).cardColor;
-    final Color shadowColor = Theme.of(context).shadowColor.withOpacity(0.04);
+    final mutedTextColor = Theme.of(context).colorScheme.onSurfaceVariant;
+    final cardBackgroundColor = Theme.of(context).cardColor;
+    final shadowColor = Theme.of(context).shadowColor.withOpacity(0.04);
 
     return Container(
       decoration: BoxDecoration(
@@ -31,20 +32,13 @@ class ServiceInfoBigCard extends StatelessWidget {
       ),
       child: InkWell(
         onTap: press,
-        borderRadius: BorderRadius.circular(16), // Match container radius
+        borderRadius: BorderRadius.circular(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ServiceImageDisplay(
-              imagePath: service.imagePath,
-            ), // Use the widget below
+            ServiceImageDisplay(imagePath: service.imagePath),
             Padding(
-              padding: const EdgeInsets.only(
-                top: 10.0,
-                left: 12.0,
-                right: 12.0,
-                bottom: 10.0,
-              ),
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -56,13 +50,10 @@ class ServiceInfoBigCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 5),
-                  CategoriesDisplay(
-                    categories: service.categories,
-                  ), // Use the widget below
+                  CategoriesDisplay(categories: service.categories),
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const SizedBox(width: 15),
                       Text(
                         service.prix.toString(),
                         style: Theme.of(
@@ -70,7 +61,12 @@ class ServiceInfoBigCard extends StatelessWidget {
                         ).textTheme.bodySmall?.copyWith(color: mutedTextColor),
                       ),
                       const SizedBox(width: 15),
-                      Text(service.localisation),
+                      Text(
+                        service.localisation,
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodySmall?.copyWith(color: mutedTextColor),
+                      ),
                     ],
                   ),
                 ],
@@ -83,14 +79,15 @@ class ServiceInfoBigCard extends StatelessWidget {
   }
 }
 
-// --- Helper Widget for Categories ---
+/// Displays the list of categories under the title
 class CategoriesDisplay extends StatelessWidget {
   final List<String> categories;
   const CategoriesDisplay({super.key, required this.categories});
+
   @override
   Widget build(BuildContext context) {
     return Text(
-      categories.join("  •  "), // Slightly more spacing for separator
+      categories.join("  •  "),
       style: Theme.of(context).textTheme.bodySmall?.copyWith(
         color: Theme.of(context).colorScheme.onSurfaceVariant,
       ),
@@ -100,29 +97,34 @@ class CategoriesDisplay extends StatelessWidget {
   }
 }
 
-// --- Helper Widget for Service Image ---
+/// Loads an image from the network with a placeholder & error fallback
 class ServiceImageDisplay extends StatelessWidget {
   final String imagePath;
   const ServiceImageDisplay({super.key, required this.imagePath});
+
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
-      aspectRatio: 1.8, // Consistent aspect ratio
+      aspectRatio: 1.8,
       child: ClipRRect(
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(16),
-        ), // Round top corners to match card
-        child: Image.asset(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        child: Image.network(
           imagePath,
           fit: BoxFit.cover,
+          loadingBuilder: (context, child, progress) {
+            if (progress == null) return child;
+            final total = progress.expectedTotalBytes;
+            final loaded = progress.cumulativeBytesLoaded;
+            return Center(
+              child: CircularProgressIndicator(
+                value: total != null ? loaded / total : null,
+              ),
+            );
+          },
           errorBuilder:
               (context, error, stackTrace) => Container(
-                // Improved error display
                 decoration: BoxDecoration(
-                  color:
-                      Theme.of(context)
-                          .colorScheme
-                          .surfaceContainerHighest, // Use a theme color for background
+                  color: Theme.of(context).colorScheme.surfaceVariant,
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(16),
                   ),
