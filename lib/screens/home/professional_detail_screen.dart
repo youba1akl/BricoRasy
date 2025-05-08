@@ -10,7 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 // Define your API_BASE_URL, ideally in a separate config file and imported
 // This is used by sendReport. ProfessionalApiService already has its own.
-const String API_BASE_URL_FOR_REPORTS = "http://127.0.0.1:5000";
+const String API_BASE_URL_FOR_REPORTS = "http://10.0.2.2:5000";
 
 class ProfessionalDetailScreen extends StatefulWidget {
   final String serviceId; // Changed to accept serviceId

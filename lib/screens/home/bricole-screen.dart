@@ -6,7 +6,7 @@ import 'package:bricorasy/models/bricole_service.dart'; // Import your service m
 import 'package:intl/intl.dart'; // Import for date formatting
 
 // Define your base API URL (uses 10.0.2.2 for Android Emulator connecting to localhost)
-const String API_BASE_URL = "http://127.0.0.1:5000";
+const String API_BASE_URL = "http://10.0.2.2:5000";
 
 class Bricolescreen extends StatefulWidget {
   final BricoleService service;
