@@ -75,19 +75,19 @@ class _PersonnelScreenState extends State<PersonnelScreen> {
               },
               // Apply consistent styling from previous examples
               style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.resolveWith<Color?>((Set<MaterialState> states) {
-                  if (states.contains(MaterialState.selected)) {
+                backgroundColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
+                  if (states.contains(WidgetState.selected)) {
                     return primaryColor.withOpacity(0.85); // Slightly adjusted opacity maybe
                   }
                   return cardColor.withOpacity(0.5); // Lighter background for unselected
                 }),
-                foregroundColor: MaterialStateProperty.resolveWith<Color?>((Set<MaterialState> states) {
-                  if (states.contains(MaterialState.selected)) {
+                foregroundColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
+                  if (states.contains(WidgetState.selected)) {
                     return onPrimaryColor;
                   }
                   return onSurfaceColor.withOpacity(0.7); // Slightly muted unselected text
                 }),
-                shape: MaterialStateProperty.all<OutlinedBorder>(
+                shape: WidgetStateProperty.all<OutlinedBorder>(
                    RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8.0),
                       side: BorderSide(color: primaryColor.withOpacity(0.3)) // Subtle border

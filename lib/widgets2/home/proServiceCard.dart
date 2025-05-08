@@ -122,7 +122,7 @@ class ServiceImageDisplay extends StatelessWidget {
                   color:
                       Theme.of(context)
                           .colorScheme
-                          .surfaceVariant, // Use a theme color for background
+                          .surfaceContainerHighest, // Use a theme color for background
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(16),
                   ),

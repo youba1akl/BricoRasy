@@ -158,11 +158,11 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
                   );
                 }
               },
-              child: const Text('Envoyer'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
               ),
+              child: const Text('Envoyer'),
             ),
           ],
         );

@@ -1,22 +1,21 @@
-const express = require("express");
-const router = express.Router();
+// routes/userRoutes.js
+const express = require('express');
 const {
   registerUser,
   loginUser,
   sendOTP,
   verifyOTP,
-} = require("../controllers/userController");
+  getArtisans
+} = require('../controllers/userController');  // ← correct relative path
 
-// Route pour inscrire un utilisateur
-router.post("/register", registerUser);
+const router = express.Router();               // ← THIS must be express.Router()
 
-// Route pour connecter un utilisateur
-router.post("/login", loginUser);
+router.post('/register',   registerUser);
+router.post('/login',      loginUser);
+router.post('/send-otp',   sendOTP);
+router.post('/verify-otp', verifyOTP);
 
-// Route pour envoyer OTP
-router.post("/send-otp", sendOTP);
-
-// Route pour vérifier OTP
-router.post("/verify-otp", verifyOTP);
+// THIS line must reference the function you exported
+router.get('/artisans',    getArtisans);
 
 module.exports = router;

@@ -9,7 +9,10 @@ const outilSchema=mongoose.Schema({
     prix: { type: mongoose.Schema.Types.Decimal128, required: true }, 
     type_annonce: { type: String, required: true },
     duree_location:{type:String},
-    photo:  { type: [String], default: [] } 
+    photo: {
+        type: [String],
+        default: [],
+      },
 });
 
 

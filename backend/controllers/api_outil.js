@@ -1,9 +1,27 @@
 const outilModel = require('../models/annonce_outil');
+const path = require("path");
+
+
+// Multer setup
+const multer  = require("multer");
+const storage = multer.diskStorage({
+  destination: (req, file, cb) =>
+    cb(null, path.join(__dirname, "../uploads")),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, `${Date.now()}${ext}`);
+  }
+});
+// export `upload` as a single middleware instead of `.array()` inline
+exports.upload = multer({ storage }).array("photo", 5);
+
 
 
 exports.createAnnonceOutil = async (req, res) => {
   try {
-    const filenames = req.files.map(f => f.filename);
+    const files = req.files || [];
+    const filenames = files.map(f => f.filename);
+
     const {
       titre,
       localisation,

@@ -24,7 +24,7 @@ class ArtisanFilterBar extends StatelessWidget {
     final Color unselectedTextColor =
         Theme.of(context).colorScheme.onSurfaceVariant;
 
-    return Container(
+    return SizedBox(
       height: 38, // Consistent height
       child: Row(
         children: _artisanScreenFilters.map((filter) {

@@ -5,6 +5,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 
 class TaskFormScreen extends StatefulWidget {
+  const TaskFormScreen({super.key});
+
   @override
   _TaskFormScreenState createState() => _TaskFormScreenState();
 }
@@ -19,7 +21,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   final _dateEndCtrl = TextEditingController();
 
   final _picker = ImagePicker();
-  List<XFile> _images = [];
+  final List<XFile> _images = [];
 
   bool _submitting = false;
   String? _selectedType;
@@ -99,7 +101,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     setState(() => _submitting = true);
 
     // --- MODIFIED URI ---
-    final uri = Uri.parse('http://127.0.0.1:5000/api/annonce/bricole'); // Changed IP
+    final uri = Uri.parse('http://10.0.2.2:5000/api/annonce/bricole'); // Changed IP
     // --- End Modification ---
 
     final req = http.MultipartRequest('POST', uri)

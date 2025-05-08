@@ -1,22 +1,28 @@
 // backend/controllers/api_annonce_prof_Controller.js
 const Annonce = require('../models/annonce_bricole_prof'); // Ensure this path is correct and Annonce is your Mongoose model for 'annonce_professionnel'
 const mongoose = require('mongoose');
+const path = require("path");
 
-// Helper to construct image URLs (ensure API_BASE_URL is set in your .env)
-const getFullImageUrl = (filename) => {
-    if (!filename) return null;
-    const apiBaseUrl = process.env.API_BASE_URL || 'http://127.0.0.1:5000'; // Default if not in .env
-    // Check if filename is already a full URL
-    if (filename.startsWith('http://') || filename.startsWith('https://')) {
-        return filename;
-    }
-    return `${apiBaseUrl}/uploads/${filename}`;
-};
+
+// Multer setup
+const multer  = require("multer");
+const storage = multer.diskStorage({
+  destination: (req, file, cb) =>
+    cb(null, path.join(__dirname, "../uploads")),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, `${Date.now()}${ext}`);
+  }
+});
+// export `upload` as a single middleware instead of `.array()` inline
+exports.upload = multer({ storage }).array("photo", 5);
 
 // POST /api/annonce/professionnel
 exports.create_annonce_prof = async (req, res) => {
   try {
-    const filenames = (req.files || []).map(f => f.filename);
+    const files = req.files || [];
+    const filenames = files.map(f => f.filename);
+
 
     let typesArray = req.body.type_annonce;
     if (!typesArray) {
@@ -71,9 +77,7 @@ exports.getAnnonce_prof = async (req, res) => {
         return {
             ...annonceJson,
             id: annonce._id, // Ensure 'id' field is populated from '_id'
-            photo: annonceJson.photo && annonceJson.photo.length > 0
-                   ? annonceJson.photo.map(p => getFullImageUrl(p))
-                   : [getFullImageUrl('default_service_image.png')] // Provide a default image path
+           
         };
     });
     res.json(transformedAnnonces);
@@ -104,13 +108,11 @@ exports.getAnnonceProfById = async (req, res) => {
             ...serviceJson, // Spreads all fields from serviceJson (including _id, name, price, etc.)
             id: service._id, // Explicitly set 'id' field from the original document's _id
                              // This ensures frontend gets 'id', even if toJSON doesn't add it.
-            photo: serviceJson.photo && serviceJson.photo.length > 0
-                   ? serviceJson.photo.map(p => getFullImageUrl(p))
-                   : [getFullImageUrl('default_service_image.png')]
+            
         };
 
         res.status(200).json(responseService);
-    } catch (error) { // This is where an error from the 'try' block would be caught
+    } catch (error) { 
         console.error('Error fetching professional service by ID:', error); // This would be approx line 91
         res.status(500).json({ message: 'Error fetching professional service details', error: error.message });
     }

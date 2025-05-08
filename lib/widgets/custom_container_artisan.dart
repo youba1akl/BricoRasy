@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class CustomContainerArtisan extends StatefulWidget {
-  const CustomContainerArtisan({
+  const CustomContainerArtisan({super.key, 
     this.fullname,
     this.job,
     this.localisation,

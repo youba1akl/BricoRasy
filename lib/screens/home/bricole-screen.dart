@@ -156,11 +156,11 @@ class _BricolescreenState extends State<Bricolescreen> {
                   );
                 }
               },
-              child: const Text('Envoyer'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
               ),
+              child: const Text('Envoyer'),
             ),
           ],
         );

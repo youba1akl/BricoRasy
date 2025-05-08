@@ -26,7 +26,7 @@ class _AddAnnoOutilState extends State<AddAnnoOutil> {
   bool _submitting = false;
 
   final _picker = ImagePicker();
-  List<XFile> _images = [];
+  final List<XFile> _images = [];
 
   final List<String> _categories = [
     'Outil jardinage',
@@ -106,7 +106,7 @@ class _AddAnnoOutilState extends State<AddAnnoOutil> {
     setState(() => _submitting = true);
 
     // Use 127.0.0.1 as requested
-    final uri = Uri.parse('http://127.0.0.1:5000/api/annonce/outil');
+    final uri = Uri.parse('http://10.0.2.2:5000/api/annonce/outil');
     final req = http.MultipartRequest('POST', uri)
       ..fields['localisation'] = _locationCtrl.text
       ..fields['titre'] = _titleCtrl.text

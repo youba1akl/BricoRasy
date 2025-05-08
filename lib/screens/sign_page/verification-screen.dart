@@ -3,7 +3,7 @@ import '../../widgets/custom_scaffold.dart';
 import 'package:flutter/material.dart';
 
 class Verificationscreen extends StatefulWidget {
-  Verificationscreen({super.key});
+  const Verificationscreen({super.key});
 
   @override
   _VerificationScreenState createState() => _VerificationScreenState();

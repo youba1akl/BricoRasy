@@ -34,7 +34,7 @@ class _ProfilscreenState extends State<Profilscreen> {
                 height: 250,
                 alignment: Alignment.center,
                 padding: const EdgeInsets.only(top: 20, bottom: 10),
-                decoration: BoxDecoration(color: Theme.of(context).brightness == Brightness.light ? Color(0XFFF3F6F4) : Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3)), // Themed background
+                decoration: BoxDecoration(color: Theme.of(context).brightness == Brightness.light ? Color(0XFFF3F6F4) : Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3)), // Themed background
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -199,7 +199,7 @@ class _ProfilscreenState extends State<Profilscreen> {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14), // Adjusted padding
         decoration: BoxDecoration(
           // Using surfaceVariant or a slightly tinted background
-          color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+          color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
           // Original color: const Color(0XFFdae5f2),
           borderRadius: const BorderRadius.all(
             Radius.circular(12), // Slightly larger radius

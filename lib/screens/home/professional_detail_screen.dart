@@ -228,11 +228,11 @@ class _ProfessionalDetailScreenState extends State<ProfessionalDetailScreen> {
                   );
                 }
               },
-              child: const Text('Envoyer'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red, // Consider using Theme.of(context).colorScheme.error
                 foregroundColor: Colors.white, // Consider using Theme.of(context).colorScheme.onError
               ),
+              child: const Text('Envoyer'),
             ),
           ],
         );

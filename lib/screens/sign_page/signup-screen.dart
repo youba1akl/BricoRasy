@@ -140,8 +140,9 @@ class _SignupscreenState extends State<Signupscreen> {
                           const SizedBox(height: 5.0),
                           TextFormField(
                             validator: (v) {
-                              if (v == null || v.isEmpty)
+                              if (v == null || v.isEmpty) {
                                 return 'Please entre your email';
+                              }
                               final regex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
                               return regex.hasMatch(v)
                                   ? null

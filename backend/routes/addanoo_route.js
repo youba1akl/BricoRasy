@@ -1,28 +1,26 @@
 const express = require('express');
-const multer  = require('multer');
-const path    = require('path');
-
 const router  = express.Router();
 
-const Annonce = require('../controllers/apianno');
+// Destructure exactly what your controller exports:
+const {
+  upload,
+  createAnnonceBricole,
+  getAnnonceBricole
+} = require('../controllers/apianno');
 
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, 'uploads/'),
-  filename:    (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `${Date.now()}${ext}`);
-  }
-});
-const upload = multer({ storage });
-
-
+// POST /api/annonce/bricole
+//  • `upload` is the multer middleware array( 'photo', 5 )
+//  • `createAnnonceBricole` is your handler
 router.post(
   '/bricole',
-  upload.array('photo', 5),
-  Annonce.createAnnonceBricole
+  upload,
+  createAnnonceBricole
 );
 
-router.get('/bricole',Annonce.getAnnonceBricole );
+// GET /api/annonce/bricole
+router.get(
+  '/bricole',
+  getAnnonceBricole
+);
 
 module.exports = router;

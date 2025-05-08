@@ -21,7 +21,7 @@ class HorizontalFilterBar extends StatelessWidget {
     final Color unselectedTextColor =
         Theme.of(context).colorScheme.onSurfaceVariant;
 
-    return Container(
+    return SizedBox(
       height: 38, // Slightly shorter
       // Removed outer grey background, rely on item backgrounds
       child: Row(

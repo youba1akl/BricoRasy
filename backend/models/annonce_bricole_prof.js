@@ -32,7 +32,7 @@ const schemaBricoleProf = new mongoose.Schema({
   },
   photo: {
     type: [String],
-    default: []
+    default: [],
   },
   types: {
     type: [String],

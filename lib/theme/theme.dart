@@ -15,8 +15,6 @@ const lightColorScheme = ColorScheme(
   onSecondary: Color(0XFFFFFFFF),
   error: Color(0XFFBA1A1A),
   onError: Color(0XFFFFFFFF),
-  background: Color(0XFFFCFDF6),
-  onBackground: Color(0XFF1A1C18),
   shadow: Color(0XFF000000),
   outlineVariant: Color(0XFFC2C8BC),
   surface: Color(0XFFF9FAF3),
@@ -37,9 +35,7 @@ const darkColorScheme = ColorScheme(
   secondary: Color(0XFF6EAEE7), // Or dark theme equivalent
   onSecondary: Color(0XFFFFFFFF),
   error: Color(0xFFCF6679), // Darker error
-  onError: Color(0xFF000000),
-  background: Color(0xFF121212), // Typical dark background
-  onBackground: Color(0xFFE1E1E1), // Light text on dark background
+  onError: Color(0xFF000000), // Light text on dark background
   shadow: Color(0xFF000000),
   outlineVariant: Color(0xFF4A4A4A), // Darker outline
   surface: Color(0xFF1E1E1E), // Dark surface for cards
@@ -52,14 +48,14 @@ ThemeData lightMode = ThemeData(
   colorScheme: lightColorScheme,
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ButtonStyle(
-      backgroundColor: MaterialStateProperty.all<Color>(lightColorScheme.primary), // Uses the blue
+      backgroundColor: WidgetStateProperty.all<Color>(lightColorScheme.primary), // Uses the blue
       foregroundColor:
-      MaterialStateProperty.all<Color>(Colors.white),
-      elevation: MaterialStateProperty.all<double>(5.0),
-      padding: MaterialStateProperty.all<EdgeInsets>(
+      WidgetStateProperty.all<Color>(Colors.white),
+      elevation: WidgetStateProperty.all<double>(5.0),
+      padding: WidgetStateProperty.all<EdgeInsets>(
         const EdgeInsets.symmetric(horizontal: 20,vertical: 18)
       ),
-      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+      shape: WidgetStateProperty.all<RoundedRectangleBorder>(
         RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         )
@@ -75,8 +71,8 @@ ThemeData darkMode = ThemeData(
   // Define elevatedButtonTheme for dark mode if needed
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ButtonStyle(
-      backgroundColor: MaterialStateProperty.all<Color>(darkColorScheme.primary),
-      foregroundColor: MaterialStateProperty.all<Color>(darkColorScheme.onPrimary),
+      backgroundColor: WidgetStateProperty.all<Color>(darkColorScheme.primary),
+      foregroundColor: WidgetStateProperty.all<Color>(darkColorScheme.onPrimary),
       // ... other button properties
     )
   )

@@ -72,7 +72,7 @@ class _FormSignUpState extends State<FormSignUp> {
 
   // gendre
   String? _gender;
-  List<String> _genderList = ['Homme', 'Femme'];
+  final List<String> _genderList = ['Homme', 'Femme'];
 
   // jobs
   List<String> _jobList = [];
@@ -129,9 +129,7 @@ class _FormSignUpState extends State<FormSignUp> {
   }
 
   Future<void> _signupUser() async {
-
-    final url = Uri.parse('http://192.168.1.7:5000/api/users/register');
-
+    final url = Uri.parse('http://192.168.216.44:5000/api/users/register');
 
     try {
       final response = await http.post(
@@ -794,7 +792,7 @@ class _FormSignUpState extends State<FormSignUp> {
                             style: TextStyle(color: Color(0XFF416FDF)),
                           ),
                           style: ButtonStyle(
-                            side: MaterialStateProperty.all(
+                            side: WidgetStateProperty.all(
                               BorderSide(
                                 color:
                                     lightMode
@@ -802,7 +800,7 @@ class _FormSignUpState extends State<FormSignUp> {
                                 width: 1.0, // Épaisseur de la bordure
                               ),
                             ),
-                            shape: MaterialStateProperty.all(
+                            shape: WidgetStateProperty.all(
                               RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(
                                   20,
@@ -923,7 +921,7 @@ class _FormSignUpState extends State<FormSignUp> {
                             style: TextStyle(color: Color(0XFF416FDF)),
                           ),
                           style: ButtonStyle(
-                            side: MaterialStateProperty.all(
+                            side: WidgetStateProperty.all(
                               BorderSide(
                                 color:
                                     lightMode
@@ -931,7 +929,7 @@ class _FormSignUpState extends State<FormSignUp> {
                                 width: 1.0, // Épaisseur de la bordure
                               ),
                             ),
-                            shape: MaterialStateProperty.all(
+                            shape: WidgetStateProperty.all(
                               RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(
                                   20,

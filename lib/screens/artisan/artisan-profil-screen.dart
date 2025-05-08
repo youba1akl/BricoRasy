@@ -267,19 +267,19 @@ class _ArtisanprofilscreenState extends State<Artisanprofilscreen> {
                         },
                         // --- Simplified Style using ButtonStyle ---
                         style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.resolveWith<Color?>((Set<MaterialState> states) {
-                            if (states.contains(MaterialState.selected)) {
+                          backgroundColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
+                            if (states.contains(WidgetState.selected)) {
                               return primaryColor; // Selected background
                             }
                             return cardColor; // Unselected background
                           }),
-                          foregroundColor: MaterialStateProperty.resolveWith<Color?>((Set<MaterialState> states) {
-                            if (states.contains(MaterialState.selected)) {
+                          foregroundColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
+                            if (states.contains(WidgetState.selected)) {
                               return onPrimaryColor; // Selected text/icon color
                             }
                             return primaryColor; // Unselected text/icon color
                           }),
-                          shape: MaterialStateProperty.all<OutlinedBorder>(
+                          shape: WidgetStateProperty.all<OutlinedBorder>(
                              RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8.0),
                                 // Optional: Add a non-stateful border here

@@ -65,7 +65,7 @@ class ArtisanListItem extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    "${artisan.job} - ${artisan.adress}", // Combine job and address
+                    "${artisan.job} - ${artisan.localisation}", // Combine job and address
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: onSurfaceVariantColor,
                         ),

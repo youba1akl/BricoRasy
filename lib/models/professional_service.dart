@@ -1,5 +1,4 @@
 // lib/models/professional_service.dart
-import 'dart:convert';
 
 class ProfessionalService {
   final String id;

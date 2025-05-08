@@ -5,7 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 
 class AddAnnoProf extends StatefulWidget {
-  const AddAnnoProf({Key? key}) : super(key: key);
+  const AddAnnoProf({super.key});
 
   @override
   State<AddAnnoProf> createState() => _AddAnnoProfState();
@@ -21,7 +21,7 @@ class _AddAnnoProfState extends State<AddAnnoProf> {
   final _dateEndCtrl = TextEditingController(); // Expiration date
 
   final ImagePicker _picker = ImagePicker();
-  List<XFile> _images = [];
+  final List<XFile> _images = [];
   final List<String> _typeOptions = ['Plombier', 'Maçon', 'Jardinier', 'Électricien', 'Peintre', 'Autre']; // Added more options
   List<String> _selectedTypes = [];
 

@@ -1,14 +1,18 @@
-const bcrypt = require("bcryptjs");
-const User = require("../models/user");
+// controllers/userController.js
+
+const bcrypt    = require("bcryptjs");
+const User      = require("../models/user");
 const sendEmail = require("../utils/sendemail");
 
-// Stockage temporaire des OTP
-let otpStore = {};
+// Temporary in-memory OTP store
+const otpStore = {};
 
-// @desc    Inscrire un nouvel utilisateur
-// @route   POST /api/users/register
-// @access  Public
-const registerUser = async (req, res) => {
+/** 
+ * @desc    Register a new user
+ * @route   POST /api/users/register
+ * @access  Public
+ */
+exports.registerUser = async (req, res) => {
   const {
     fullname,
     email,
@@ -16,24 +20,22 @@ const registerUser = async (req, res) => {
     phone,
     role,
     job,
-    localisation,
+    localisation,  // matches your schema
     genre,
     birthdate,
     photo,
   } = req.body;
 
   try {
-    // Vérifier si l'utilisateur existe déjà
-    const userExists = await User.findOne({ email });
-
-    if (userExists) {
+    // 1) Check if email is already used
+    if (await User.findOne({ email })) {
       return res.status(400).json({ message: "Cet email est déjà utilisé." });
     }
 
-    // Hacher le mot de passe
+    // 2) Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Créer le nouvel utilisateur
+    // 3) Create user
     const user = await User.create({
       fullname,
       email,
@@ -41,80 +43,81 @@ const registerUser = async (req, res) => {
       phone,
       role,
       job,
-      localisation,
+      localisation,    // ← corrected from user.communs
       genre,
       birthdate,
       photo,
     });
 
+    // 4) Return created user (omit password)
     res.status(201).json({
-      _id: user._id,
-      fullname: user.fullname,
-      email: user.email,
-      phone: user.phone,
-      role: user.role,
-      job: user.job,
-      localisation: user.communs,
-      genre: user.genre,
-      birthdate: user.birthdate,
-      photo: user.photo,
-      createdAt: user.createdAt,
+      _id:           user._id,
+      fullname:      user.fullname,
+      email:         user.email,
+      phone:         user.phone,
+      role:          user.role,
+      job:           user.job,
+      localisation:  user.localisation,
+      genre:         user.genre,
+      birthdate:     user.birthdate,
+      photo:         user.photo,
+      createdAt:     user.createdAt,
     });
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Erreur serveur" });
   }
 };
 
-// @desc    Connecter un utilisateur
-// @route   POST /api/users/login
-// @access  Public
-const loginUser = async (req, res) => {
+
+/** 
+ * @desc    Authenticate user
+ * @route   POST /api/users/login
+ * @access  Public
+ */
+exports.loginUser = async (req, res) => {
   const { email, password } = req.body;
 
   try {
     const user = await User.findOne({ email });
-
     if (!user) {
-      return res
-        .status(400)
-        .json({ message: "Email ou mot de passe incorrect" });
+      return res.status(401).json({ message: "Email ou mot de passe incorrect" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
-
     if (!isMatch) {
-      return res
-        .status(400)
-        .json({ message: "Email ou mot de passe incorrect" });
+      return res.status(401).json({ message: "Email ou mot de passe incorrect" });
     }
 
+    // Return user profile (omit password)
     res.json({
-      _id: user._id,
-      fullname: user.fullname,
-      email: user.email,
-      phone: user.phone,
-      role: user.role,
-      job: user.job,
-      localisation: user.communs,
-      genre: user.genre,
-      birthdate: user.birthdate,
-      photo: user.photo,
-      createdAt: user.createdAt,
+      _id:           user._id,
+      fullname:      user.fullname,
+      email:         user.email,
+      phone:         user.phone,
+      role:          user.role,
+      job:           user.job,
+      localisation:  user.localisation,  // ← corrected
+      genre:         user.genre,
+      birthdate:     user.birthdate,
+      photo:         user.photo,
+      createdAt:     user.createdAt,
     });
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Erreur serveur" });
   }
 };
 
-// @desc    Envoyer un code OTP
-// @route   POST /api/users/send-otp
-// @access  Public
-const sendOTP = async (req, res) => {
-  const { email } = req.body;
 
+/** 
+ * @desc    Send an OTP to the given email
+ * @route   POST /api/users/send-otp
+ * @access  Public
+ */
+exports.sendOTP = async (req, res) => {
   try {
+    const { email } = req.body;
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
     otpStore[email] = otp;
 
@@ -124,32 +127,47 @@ const sendOTP = async (req, res) => {
       `Votre code de vérification est : ${otp}`
     );
 
-    res.status(200).json({ message: "OTP envoyé avec succès" });
-  } catch (error) {
-    console.error(error);
+    res.json({ message: "OTP envoyé avec succès" });
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Erreur lors de l'envoi de l'OTP" });
   }
 };
 
-// @desc    Vérifier le code OTP
-// @route   POST /api/users/verify-otp
-// @access  Public
-const verifyOTP = (req, res) => {
-  const { email, otp } = req.body;
 
+/** 
+ * @desc    Verify the OTP for the given email
+ * @route   POST /api/users/verify-otp
+ * @access  Public
+ */
+exports.verifyOTP = (req, res) => {
+  const { email, otp } = req.body;
   try {
-    if (otpStore[email] && otpStore[email] === otp) {
+    if (otpStore[email] === otp) {
       delete otpStore[email];
-      res.status(200).json({ message: "OTP vérifié avec succès" });
-    } else {
-      res.status(400).json({ message: "OTP incorrect" });
+      return res.json({ message: "OTP vérifié avec succès" });
     }
-  } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ message: "Erreur lors de la vérification de l'OTP" });
+    res.status(400).json({ message: "OTP incorrect" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erreur lors de la vérification de l'OTP" });
   }
 };
 
-module.exports = { registerUser, loginUser, sendOTP, verifyOTP };
+
+/** 
+ * @desc    Get all users whose role is “artisan”
+ * @route   GET /api/users/artisans
+ * @access  Public (or protected, depending on your needs)
+ */
+exports.getArtisans = async (req, res) => {
+  try {
+    const artisans = await User
+      .find({ role: "artisan" })
+      .select("-password");  // omit the password
+    res.json(artisans);
+  } catch (err) {
+    console.error("Error fetching artisans:", err);
+    res.status(500).json({ error: "Erreur serveur lors de récupération." });
+  }
+};

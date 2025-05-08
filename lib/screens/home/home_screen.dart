@@ -201,17 +201,21 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildCurrentContent() {
     switch (_selectedFilter) {
       case 'Objet':
-        if (_loadingTools)
+        if (_loadingTools) {
           return const Center(child: CircularProgressIndicator());
-        if (_filteredTools.isEmpty)
+        }
+        if (_filteredTools.isEmpty) {
           return const Center(child: Text('Aucun outil trouvé'));
+        }
         return ToolGridView(tools: _filteredTools, onToolTapped: _onToolTapped);
 
       case 'Professionnel':
-        if (_loadingPro)
+        if (_loadingPro) {
           return const Center(child: CircularProgressIndicator());
-        if (_filteredPro.isEmpty)
+        }
+        if (_filteredPro.isEmpty) {
           return const Center(child: Text('Aucune annonce trouvée'));
+        }
         return ProserviceListView(
           services: _filteredPro,
           onServiceTapped: _onProServiceTapped,
@@ -219,10 +223,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
       case 'Bricole':
       default:
-        if (_loadingBricole)
+        if (_loadingBricole) {
           return const Center(child: CircularProgressIndicator());
-        if (_filteredBricole.isEmpty)
+        }
+        if (_filteredBricole.isEmpty) {
           return const Center(child: Text('Aucune annonce trouvée'));
+        }
         return ServiceListView(
           services: _filteredBricole,
           onServiceTapped: _onServiceTapped,
