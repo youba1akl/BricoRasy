@@ -129,9 +129,7 @@ class _FormSignUpState extends State<FormSignUp> {
   }
 
   Future<void> _signupUser() async {
-
-    final url = Uri.parse('http://192.168.1.7:5000/api/users/register');
-
+    final url = Uri.parse('http://192.168.216.44:5000/api/users/register');
 
     try {
       final response = await http.post(

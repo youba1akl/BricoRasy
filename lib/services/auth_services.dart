@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 class AuthService {
   static const String baseUrl =
-      "http://192.168.1.7:5000"; // <-- Remplacer par ton IP locale !!
+      "http://192.168.216.44:5000"; // <-- Remplacer par ton IP locale !!
 
   // Fonction pour envoyer OTP à l'email
   static Future<bool> sendOtp(String email) async {

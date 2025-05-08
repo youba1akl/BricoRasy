@@ -1,7 +1,9 @@
+// lib/models/artisan.model.dart
+
 class Artisan {
   final String fullname;
   final String job;
-  final String adress;
+  final String localisation;
   final String numTel;
   final String rating;
   final String image;
@@ -10,7 +12,7 @@ class Artisan {
   Artisan({
     required this.fullname,
     required this.job,
-    required this.adress,
+    required this.localisation,
     required this.numTel,
     required this.rating,
     required this.image,
@@ -18,10 +20,17 @@ class Artisan {
   });
 
   factory Artisan.fromJson(Map<String, dynamic> json) {
+    // ➊ Merge any possible key names for “address”
+    final loc =
+        json['localisation'] ??
+        json['adress'] // fallback if your server used “adress”
+        ??
+        '';
+
     return Artisan(
       fullname: json['fullname'] ?? '',
       job: json['job'] ?? '',
-      adress: json['adress'] ?? '',
+      localisation: loc,
       numTel: json['numTel'] ?? '',
       rating: json['rating'] ?? '',
       image: json['image'] ?? '',
@@ -29,15 +38,13 @@ class Artisan {
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'fullname': fullname,
-      'job': job,
-      'adress': adress,
-      'numTel': numTel,
-      'rating': rating,
-      'image': image,
-      'like': like,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+    'fullname': fullname,
+    'job': job,
+    'localisation': localisation,
+    'numTel': numTel,
+    'rating': rating,
+    'image': image,
+    'like': like,
+  };
 }

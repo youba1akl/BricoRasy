@@ -99,7 +99,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     setState(() => _submitting = true);
 
     // --- MODIFIED URI ---
-    final uri = Uri.parse('http://127.0.0.1:5000/api/annonce/bricole'); // Changed IP
+    final uri = Uri.parse('http://10.0.2.2:5000/api/annonce/bricole'); // Changed IP
     // --- End Modification ---
 
     final req = http.MultipartRequest('POST', uri)
