@@ -1,9 +1,8 @@
-const outilModel = require('../models/annonce_outil');
-const path = require("path");
-
+const path       = require("path");
+const multer     = require("multer");
+const outilModel = require("../models/annonce_outil");
 
 // Multer setup
-const multer  = require("multer");
 const storage = multer.diskStorage({
   destination: (req, file, cb) =>
     cb(null, path.join(__dirname, "../uploads")),
@@ -12,28 +11,48 @@ const storage = multer.diskStorage({
     cb(null, `${Date.now()}${ext}`);
   }
 });
-// export `upload` as a single middleware instead of `.array()` inline
 exports.upload = multer({ storage }).array("photo", 5);
 
-
-
+/**
+ * @desc    Create a new “outil” annonce
+ * @route   POST /api/annonce/outil
+ * @access  Public
+ */
 exports.createAnnonceOutil = async (req, res) => {
   try {
-    const files = req.files || [];
+    const files     = req.files || [];
     const filenames = files.map(f => f.filename);
 
+    // Destructure incoming form fields
     const {
       titre,
       localisation,
-      description,
+      description = "",
       prix,
       type_annonce,
       date_creation,
-      dure_location,
-      phone,      // NEW
-      mail 
+      duree_location,   // matches schema
+      phone,
+      mail
     } = req.body;
 
+    // Validate required fields
+    if (
+      !titre ||
+      !localisation ||
+      !prix ||
+      !type_annonce ||
+      !date_creation ||
+      !duree_location ||
+      !phone ||
+      !mail
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Tous les champs obligatoires doivent être fournis." });
+    }
+
+    // Build and save the new document
     const newAnnonce = new outilModel({
       titre,
       localisation,
@@ -41,26 +60,35 @@ exports.createAnnonceOutil = async (req, res) => {
       prix,
       type_annonce,
       date_creation:  new Date(date_creation),
+      duree_location,   // correct field name
       photo:          filenames,
-      dure_location,phone,mail
+      phone,
+      mail,
     });
 
     const saved = await newAnnonce.save();
     res.status(201).json(saved);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error("Erreur création annonce outil :", error);
+    res.status(500).json({ error: error.message });
   }
 };
 
-
-exports.getOutil=async(req,res)=>{
+/**
+ * @desc    List all “outil” annonces
+ * @route   GET /api/annonce/outil
+ * @access  Public
+ */
+exports.getOutil = async (req, res) => {
   try {
-    const annonce=await outilModel.find().sort({ date_creation: -1 });
-    res.json(annonce);
+    const annonces = await outilModel
+      .find()
+      .sort({ date_creation: -1 });
+    res.json(annonces);
   } catch (error) {
-    console.error('Failed to fetch annonces:', error);
+    console.error("Failed to fetch annonces outil:", error);
     res
       .status(500)
-      .json({ error: 'Erreur serveur lors de la récupération des annonces.' });
+      .json({ error: "Erreur serveur lors de la récupération des annonces." });
   }
-}
+};

@@ -6,7 +6,6 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
 
 import 'package:bricorasy/models/bricole_service.dart';
-import 'package:bricorasy/services/auth_services.dart'; // ← IMPORT your AuthService
 
 const String API_BASE_URL = "http://10.0.2.2:5000";
 

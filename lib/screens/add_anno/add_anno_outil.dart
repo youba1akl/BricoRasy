@@ -129,9 +129,12 @@ class _AddAnnoOutilState extends State<AddAnnoOutil> {
               _durationCtrl
                   .text // Duration field
           ..fields['description'] = _descriptionCtrl.text
-          ..fields['date_creation'] = _dateCtrl.text;
-    final _mailCtrl = TextEditingController();
-    final _phoneCtrl = TextEditingController();
+          ..fields['date_creation'] = _dateCtrl.text
+          ..fields['phone'] =
+              _phoneCtrl
+                  .text // ← here
+          ..fields['mail'] = _mailCtrl.text;
+
     // TODO: Add user ID
 
     for (var img in _images) {

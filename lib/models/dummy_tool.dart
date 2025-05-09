@@ -1,5 +1,3 @@
-
-
 class DummyTool {
   final String id;
   final String localisation;
@@ -11,7 +9,7 @@ class DummyTool {
   final String imagePath;
   final double price;
   final String phone; // ← new
-  final String mail;
+  final String mail; // ← new
 
   const DummyTool({
     required this.id,
@@ -23,8 +21,8 @@ class DummyTool {
     required this.description,
     required this.imagePath,
     required this.price,
-     required this.phone, // ← new
-    required this.mail, 
+    required this.phone,
+    required this.mail,
   });
 
   factory DummyTool.fromJson(Map<String, dynamic> json) {
@@ -51,7 +49,7 @@ class DummyTool {
       prixValue = 0.0;
     }
 
-    // Parse photos array
+    // Parse photos array and build full URL
     String imgUrl = '';
     if (json['photo'] is List) {
       final photos = (json['photo'] as List).whereType<String>().toList();
@@ -75,4 +73,3 @@ class DummyTool {
     );
   }
 }
-
