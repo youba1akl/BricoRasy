@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:bricorasy/models/artisan.model.dart';
 
 class api_artisan {
-  static const _baseUrl = 'http://10.0.2.2:5000';
+  static const _baseUrl = 'http://127.0.0.1:5000';
 
   static Future<List<Artisan>> fetchArtisans() async {
     final uri = Uri.parse('$_baseUrl/api/users/artisans');
