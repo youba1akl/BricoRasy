@@ -10,6 +10,8 @@ class DummyTool {
   final String description;
   final String imagePath;
   final double price;
+  final String phone; // ← new
+  final String mail;
 
   const DummyTool({
     required this.id,
@@ -21,6 +23,8 @@ class DummyTool {
     required this.description,
     required this.imagePath,
     required this.price,
+     required this.phone, // ← new
+    required this.mail, 
   });
 
   factory DummyTool.fromJson(Map<String, dynamic> json) {
@@ -32,6 +36,8 @@ class DummyTool {
     final String dureeLocation = json['duree_location'] as String? ?? '';
     final String typeAnnonce = json['type_annonce'] as String? ?? '';
     final String description = json['description'] as String? ?? '';
+    final String phone = json['phone'] as String? ?? '';
+    final String mail = json['mail'] as String? ?? '';
 
     // Parse price (handles Decimal128 or number)
     double prixValue;
@@ -64,6 +70,8 @@ class DummyTool {
       description: description,
       imagePath: imgUrl,
       price: prixValue,
+      phone: phone,
+      mail: mail,
     );
   }
 }

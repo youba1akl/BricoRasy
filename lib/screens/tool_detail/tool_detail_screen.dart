@@ -7,7 +7,7 @@ import 'package:intl/intl.dart'; // Import for date formatting
 
 // Define your base API URL (uses 10.0.2.2 for Android Emulator connecting to localhost)
 // Keep IP addresses as they are
-const String API_BASE_URL = "http://127.0.0.1:5000";
+const String API_BASE_URL = "http://10.0.2.2:5000";
 
 class ToolDetailScreen extends StatefulWidget {
   final DummyTool tool; // Takes the tool object

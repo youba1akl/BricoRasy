@@ -3,6 +3,7 @@ import 'dart:convert'; // For error parsing
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:bricorasy/services/auth_services.dart';
 
 class TaskFormScreen extends StatefulWidget {
   const TaskFormScreen({super.key});
@@ -19,6 +20,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   final _priceCtrl = TextEditingController();
   final _dateStartCtrl = TextEditingController();
   final _dateEndCtrl = TextEditingController();
+  final _mailCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
 
   final _picker = ImagePicker();
   final List<XFile> _images = [];
@@ -121,7 +124,9 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           ..fields['prix'] = _priceCtrl.text.replaceAll(',', '.')
           ..fields['description'] = _descriptionCtrl.text
           ..fields['date_creation'] = _dateStartCtrl.text
-          ..fields['date_expiration'] = _dateEndCtrl.text;
+          ..fields['date_expiration'] = _dateEndCtrl.text
+          ..fields['mail'] = _mailCtrl.text
+          ..fields['phone'] = _phoneCtrl.text;
 
     for (var img in _images) {
       req.files.add(await http.MultipartFile.fromPath('photo', img.path));
@@ -241,6 +246,28 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
               ),
               const SizedBox(height: 18),
 
+              TextFormField(
+                controller: _phoneCtrl,
+                decoration: inputDecoration('phone', Icons.title),
+                validator:
+                    (v) =>
+                        v == null || v.trim().isEmpty
+                            ? 'numero obligatoire'
+                            : null,
+                textCapitalization: TextCapitalization.sentences,
+              ),
+              const SizedBox(height: 18),
+              TextFormField(
+                controller: _mailCtrl,
+                decoration: inputDecoration('mail', Icons.title),
+                validator:
+                    (v) =>
+                        v == null || v.trim().isEmpty
+                            ? 'mail obligatoire'
+                            : null,
+                textCapitalization: TextCapitalization.sentences,
+              ),
+              const SizedBox(height: 18),
               // Type dropdown
               DropdownButtonFormField<String>(
                 value: _selectedType,

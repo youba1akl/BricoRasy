@@ -13,6 +13,16 @@ const outilSchema=mongoose.Schema({
         type: [String],
         default: [],
       },
+      phone: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  mail: {
+    type: String,
+    required: true,
+    trim: true,
+  },
 });
 
 

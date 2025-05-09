@@ -29,7 +29,9 @@ exports.createAnnonceOutil = async (req, res) => {
       prix,
       type_annonce,
       date_creation,
-      dure_location
+      dure_location,
+      phone,      // NEW
+      mail 
     } = req.body;
 
     const newAnnonce = new outilModel({
@@ -40,7 +42,7 @@ exports.createAnnonceOutil = async (req, res) => {
       type_annonce,
       date_creation:  new Date(date_creation),
       photo:          filenames,
-      dure_location
+      dure_location,phone,mail
     });
 
     const saved = await newAnnonce.save();

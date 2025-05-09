@@ -1,9 +1,24 @@
+// lib/services/auth_service.dart
+
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AuthService {
   static const String baseUrl =
       "http://192.168.43.224:5000"; // <-- Remplacer par ton IP locale !!
+
+  /// ────────────────────────────────────────────────────────
+  /// Store the currently-logged-in user’s ID & phone here:
+  static String? userId;
+  static String? phone;
+
+  /// Call this immediately after a successful login:
+  static void setUser(String id, String userPhone) {
+    userId = id;
+    phone = userPhone;
+  }
+
+  /// ────────────────────────────────────────────────────────
 
   // Fonction pour envoyer OTP à l'email
   static Future<bool> sendOtp(String email) async {
@@ -70,6 +85,10 @@ class AuthService {
       if (response.statusCode == 200) {
         // Connexion réussie
         final data = json.decode(response.body);
+
+        // ←─── NEW: remember this user’s id & phone ────→
+        setUser(data['_id'] as String, data['phone'] as String);
+
         return {'success': true, 'data': data};
       } else {
         final message =

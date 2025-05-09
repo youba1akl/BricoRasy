@@ -5,6 +5,7 @@ class Artisan {
   final String job;
   final String localisation;
   final String numTel;
+  
   final String rating;
   final String image;
   final String like;
@@ -17,6 +18,7 @@ class Artisan {
     required this.rating,
     required this.image,
     required this.like,
+    
   });
 
   factory Artisan.fromJson(Map<String, dynamic> json) {

@@ -30,8 +30,20 @@ const annonceSchema = new mongoose.Schema({
   type_annonce: {
     type: String,
     required: true,
-    
   },
+
+  // ← add these two new required fields
+  phone: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  mail: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+
   photo: {
     type: [String],
     default: [],
