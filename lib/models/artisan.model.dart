@@ -1,13 +1,11 @@
 // lib/models/artisan.model.dart
-
 class Artisan {
   final String fullname;
   final String job;
   final String localisation;
   final String numTel;
-  
   final String rating;
-  final String image;
+  final String image; // This can be an empty string
   final String like;
 
   Artisan({
@@ -18,25 +16,24 @@ class Artisan {
     required this.rating,
     required this.image,
     required this.like,
-    
   });
 
   factory Artisan.fromJson(Map<String, dynamic> json) {
-    // ➊ Merge any possible key names for “address”
-    final loc =
-        json['localisation'] ??
-        json['adress'] // fallback if your server used “adress”
-        ??
-        '';
+    final loc = json['localisation'] ?? json['adress'] ?? '';
+    // Ensure image defaults to empty string if null, not just missing
+    String imagePath = json['profilePicture'] as String? ??
+                       json['photo'] as String? ??
+                       json['image'] as String? ??
+                       ''; // Default to empty string
 
     return Artisan(
       fullname: json['fullname'] ?? '',
       job: json['job'] ?? '',
       localisation: loc,
       numTel: json['numTel'] ?? '',
-      rating: json['rating'] ?? '',
-      image: json['image'] ?? '',
-      like: json['like'] ?? '',
+      rating: json['rating']?.toString() ?? '0',
+      image: imagePath, // Will be "" if not found
+      like: json['like']?.toString() ?? '0',
     );
   }
 
