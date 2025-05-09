@@ -125,8 +125,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           ..fields['description'] = _descriptionCtrl.text
           ..fields['date_creation'] = _dateStartCtrl.text
           ..fields['date_expiration'] = _dateEndCtrl.text
-          ..fields['mail'] = _mailCtrl.text
-          ..fields['phone'] = _phoneCtrl.text;
+          ..fields['numtel'] = _phoneCtrl.text
+          ..fields['mail'] = _mailCtrl.text;
 
     for (var img in _images) {
       req.files.add(await http.MultipartFile.fromPath('photo', img.path));

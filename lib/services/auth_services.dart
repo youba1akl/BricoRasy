@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 
 class AuthService {
   static const String baseUrl =
-      "http://192.168.53.44:5000"; // <-- Remplacer par ton IP locale !!
+      "http://192.168.43.44:5000"; // <-- Remplacer par ton IP locale !!
 
   /// ────────────────────────────────────────────────────────
   /// Store the currently-logged-in user’s ID & phone here:

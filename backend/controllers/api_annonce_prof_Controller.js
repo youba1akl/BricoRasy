@@ -1,11 +1,9 @@
-// backend/controllers/api_annonce_prof_Controller.js
-const Annonce = require('../models/annonce_bricole_prof'); // Ensure this path is correct and Annonce is your Mongoose model for 'annonce_professionnel'
+const Annonce = require('../models/annonce_bricole_prof');
 const mongoose = require('mongoose');
 const path = require("path");
-
+const multer = require("multer");
 
 // Multer setup
-const multer  = require("multer");
 const storage = multer.diskStorage({
   destination: (req, file, cb) =>
     cb(null, path.join(__dirname, "../uploads")),
@@ -14,106 +12,105 @@ const storage = multer.diskStorage({
     cb(null, `${Date.now()}${ext}`);
   }
 });
-// export `upload` as a single middleware instead of `.array()` inline
 exports.upload = multer({ storage }).array("photo", 5);
 
 // POST /api/annonce/professionnel
 exports.create_annonce_prof = async (req, res) => {
   try {
-    const files = req.files || [];
+    const files     = req.files || [];
     const filenames = files.map(f => f.filename);
 
-
-    let typesArray = req.body.type_annonce;
-    if (!typesArray) {
-      typesArray = [];
-    } else if (typeof typesArray === 'string') {
-      typesArray = typesArray.split(',').map(s => s.trim()).filter(s => s);
-    } else if (!Array.isArray(typesArray)) {
-        typesArray = [String(typesArray)];
-    }
-
-    const {
+    // **Now pulling both numtel _and_ mail from body**
+    let {
       titre,
       description = '',
-      prix, // This is req.body.prix
+      prix,
       localisation,
       numtel,
+      mail,
       date_creation,
-      date_expiration
+      date_expiration,
+      type_annonce
     } = req.body;
 
+    // Normalize `type_annonce` into array
+    if (!type_annonce) {
+      type_annonce = [];
+    } else if (typeof type_annonce === 'string') {
+      type_annonce = type_annonce.split(',')
+                                   .map(s => s.trim())
+                                   .filter(s => s);
+    }
+
+    // Server-side guard: fail if any required field is missing
+    if (
+      !titre ||
+      !localisation ||
+      !prix ||
+      !Array.isArray(type_annonce) ||
+      type_annonce.length === 0 ||
+      !date_expiration ||
+      !numtel ||
+      !mail
+    ) {
+      return res.status(400).json({
+        error:
+          "Champs manquants : titre, localisation, type_annonce, prix, date_expiration, numtel et mail sont obligatoires."
+      });
+    }
+
     const newAnnonce = new Annonce({
-      name: titre, // Mapped from 'titre' in request to 'name' in model
+      name:            titre,
       description,
-      prix: prix, // Save req.body.prix to the 'prix' field in the model
+      prix,
       localisation,
-      numtel,
+      numtel,         // ← your phone field
+      mail,           // ← your email field
       date_creation:   new Date(date_creation),
       date_expiration: new Date(date_expiration),
       photo:           filenames,
-      types:           typesArray
+      types:           type_annonce
     });
 
     const saved = await newAnnonce.save();
-    // Assuming your model's toJSON handles price, but not _id to id explicitly
     const savedJson = saved.toJSON();
     res.status(201).json({
-        ...savedJson,
-        id: saved._id // Explicitly add 'id' field from '_id' for consistency if frontend expects 'id'
+      ...savedJson,
+      id: saved._id
     });
   } catch (error) {
     console.error('Error creating annonce_professionnel:', error);
     res.status(400).json({ error: error.message });
   }
 };
-
-// GET /api/annonce/professionnel (all)
+// GET all
 exports.getAnnonce_prof = async (req, res) => {
   try {
     const annonces = await Annonce.find().sort({ date_creation: -1 });
-    const transformedAnnonces = annonces.map(annonce => {
-        const annonceJson = annonce.toJSON(); // Applies the model's toJSON transform for price
-        return {
-            ...annonceJson,
-            id: annonce._id, // Ensure 'id' field is populated from '_id'
-           
-        };
+    const transformed = annonces.map(a => {
+      const j = a.toJSON();
+      return { ...j, id: a._id };
     });
-    res.json(transformedAnnonces);
+    res.json(transformed);
   } catch (error) {
     console.error('Failed to fetch annonces_professionnel:', error);
     res.status(500).json({ error: 'Erreur serveur lors de la récupération des annonces.' });
   }
 };
 
-// GET /api/annonce/professionnel/:id (single)
+// GET by id
 exports.getAnnonceProfById = async (req, res) => {
-    try {
-        const serviceId = req.params.id;
-
-        if (!mongoose.Types.ObjectId.isValid(serviceId)) {
-            return res.status(400).json({ message: 'Invalid service ID format' });
-        }
-
-        const service = await Annonce.findById(serviceId);
-
-        if (!service) {
-            return res.status(404).json({ message: 'Professional service not found' });
-        }
-
-        const serviceJson = service.toJSON(); // Applies model's toJSON for price transformation
-
-        const responseService = {
-            ...serviceJson, // Spreads all fields from serviceJson (including _id, name, price, etc.)
-            id: service._id, // Explicitly set 'id' field from the original document's _id
-                             // This ensures frontend gets 'id', even if toJSON doesn't add it.
-            
-        };
-
-        res.status(200).json(responseService);
-    } catch (error) { 
-        console.error('Error fetching professional service by ID:', error); // This would be approx line 91
-        res.status(500).json({ message: 'Error fetching professional service details', error: error.message });
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'ID invalide' });
     }
+    const svc = await Annonce.findById(id);
+    if (!svc) return res.status(404).json({ message: 'Annonce non trouvée' });
+    const j = svc.toJSON();
+    res.json({ ...j, id: svc._id });
+  } catch (error) {
+    console.error('Error fetching professional service by ID:', error);
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
+  }
 };

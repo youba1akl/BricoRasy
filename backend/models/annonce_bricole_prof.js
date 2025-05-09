@@ -1,10 +1,9 @@
-// backend/models/annonce_bricole_prof.js (or annonce_professionnel.js)
 const mongoose = require('mongoose');
 
 const schemaBricoleProf = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, "Le nom (titre) de l'annonce est requis"]
+    required: [true, "Le nom de l'annonce est requis"]
   },
   description: {
     type: String,
@@ -20,7 +19,13 @@ const schemaBricoleProf = new mongoose.Schema({
   },
   numtel: {
     type: String,
-    default: ''
+    required: [true, "Le numéro de téléphone est requis"],
+    trim: true
+  },
+  mail: {
+    type: String,
+    required: [true, "L'adresse email est requise"],
+    trim: true
   },
   date_creation: {
     type: Date,
@@ -32,40 +37,30 @@ const schemaBricoleProf = new mongoose.Schema({
   },
   photo: {
     type: [String],
-    default: [],
+    default: []
   },
   types: {
     type: [String],
-    enum: ['Plombier', 'Maçon', 'Jardinier', 'Électricien', 'Peintre', 'Autre'], // Note: Corrected 'PlOkayombier'
+    enum: ['Plombier', 'Maçon', 'Jardinier', 'Électricien', 'Peintre', 'Autre'],
     validate: {
-      validator: function(arr) {
-        return Array.isArray(arr) && arr.length > 0;
-      },
+      validator: arr => Array.isArray(arr) && arr.length > 0,
       message: 'Au moins un type/métier doit être sélectionné'
     },
     required: [true, 'Au moins un type/métier doit être sélectionné']
   }
-  // userId: {
-  //   type: mongoose.Schema.Types.ObjectId,
-  //   ref: 'User', // Good practice to add ref
-  //   required: true
-  // }
 }, {
   timestamps: true
 });
 
 schemaBricoleProf.set('toJSON', {
-  virtuals: true, // Ensure virtuals like 'id' are included if you define them
+  virtuals: true,
   transform: (doc, ret) => {
-    // Ensure _id is transformed to id
     ret.id = ret._id;
     delete ret._id;
-    delete ret.__v; // Remove version key
+    delete ret.__v;
 
     if (ret.prix && ret.prix.$numberDecimal) {
       ret.prix = parseFloat(ret.prix.$numberDecimal).toString();
-    } else if (ret.prix) { // If somehow it's already a number (e.g. during creation if not Decimal128)
-      ret.prix = parseFloat(ret.prix).toString();
     }
     return ret;
   }

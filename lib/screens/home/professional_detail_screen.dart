@@ -1,242 +1,142 @@
 // lib/screens/home/professional_detail_screen.dart
-import 'dart:convert'; // For jsonEncode in sendReport
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http; // For sendReport
-import 'package:share_plus/share_plus.dart';
-import 'package:bricorasy/models/professional_service.dart'; // Your model
-import 'package:bricorasy/services/professional_api_service.dart'; // Your API service
-import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
 
-// Define your API_BASE_URL, ideally in a separate config file and imported
-// This is used by sendReport. ProfessionalApiService already has its own.
-const String API_BASE_URL_FOR_REPORTS = "http://10.0.2.2:5000";
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:intl/intl.dart';
+
+import 'package:bricorasy/models/professional_service.dart';
+
+const String API_BASE_URL = "http://10.0.2.2:5000";
 
 class ProfessionalDetailScreen extends StatefulWidget {
-  final String serviceId; // Changed to accept serviceId
+  final ProfessionalService service;
 
-  const ProfessionalDetailScreen({
-    super.key,
-    required this.serviceId,
-  });
+  const ProfessionalDetailScreen({super.key, required this.service});
 
   @override
-  State<ProfessionalDetailScreen> createState() => _ProfessionalDetailScreenState();
+  State<ProfessionalDetailScreen> createState() =>
+      _ProfessionalDetailScreenState();
 }
 
 class _ProfessionalDetailScreenState extends State<ProfessionalDetailScreen> {
-  final ProfessionalApiService _apiService = ProfessionalApiService();
-  ProfessionalService? _service; // Make it nullable
-  bool _isLoading = true;
-  String? _error;
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchServiceDetails();
-  }
-
-  Future<void> _fetchServiceDetails() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-    try {
-      final fetchedService = await _apiService.fetchProfessionalServiceById(widget.serviceId);
-      if (!mounted) return;
-      setState(() {
-        _service = fetchedService;
-        _isLoading = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      print('Error in _fetchServiceDetails: $e');
-      setState(() {
-        _error = "Impossible de charger les détails: ${e.toString()}";
-        _isLoading = false;
-      });
+  Future<void> _launchDialer(String phone) async {
+    final uri = Uri(scheme: 'tel', path: phone);
+    if (!await launchUrl(uri)) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Impossible d’appeler : $phone')));
     }
   }
 
-  Widget _buildInfoRow(BuildContext context, IconData icon, String text, {bool isPrice = false}) {
-    if (_service == null) return const SizedBox.shrink();
-    final Color mutedTextColor = Theme.of(context).colorScheme.onSurfaceVariant;
-
-    // Don't show row if text is empty, unless it's price (which might be 0.00 DA)
-    if (text.isEmpty && !isPrice) return const SizedBox.shrink();
-    // Special check for price: don't show if price is exactly 0.0 and the text is "0.00 DA"
-    // (assuming _service.prix is available when isPrice is true)
-    if (isPrice && _service!.prix == 0.0 && text == "0.00 DA") return const SizedBox.shrink();
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 20, color: mutedTextColor),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              text,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: mutedTextColor, height: 1.4),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatDate(String dateString) {
-    try {
-      if (dateString.isEmpty) return "Non spécifiée";
-      final DateTime dateTime = DateTime.parse(dateString);
-      return DateFormat('d MMM yyyy', 'fr_FR').format(dateTime); // Ensure 'fr_FR' locale is initialized if needed
-    } catch (e) {
-      return dateString; // Fallback to original string if parsing fails
-    }
-  }
-
-  Future<void> _callAction() async {
-    if (_service == null || _service!.numtel == null || _service!.numtel!.trim().isEmpty) {
-      print("Phone number is missing for service ID: ${widget.serviceId}");
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Numéro de téléphone non disponible.")),
-        );
-      }
+  void _callAction() {
+    final phone = widget.service.numtel ?? '';
+    if (phone.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Numéro de téléphone indisponible')),
+      );
       return;
     }
-
-    final String sanitizedPhoneNumber = _service!.numtel!.replaceAll(RegExp(r'[^0-9+]'), '');
-    final Uri launchUri = Uri(scheme: 'tel', path: sanitizedPhoneNumber);
-
-    if (await canLaunchUrl(launchUri)) {
-      try {
-        await launchUrl(launchUri);
-      } catch (e) {
-        print("Error launching phone dialer: $e");
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Impossible de lancer l'appel: $e"), backgroundColor: Colors.red),
-          );
-        }
-      }
-    } else {
-      print('Could not launch ${launchUri.toString()}');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Impossible de lancer l'application téléphone.")),
-        );
-      }
-    }
+    _launchDialer(phone);
   }
 
   void _messageAction() {
-    if (_service == null) return;
-    print('Messaging professional: ${_service!.name}');
-     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Fonctionnalité de message non implémentée.")));
+    // TODO: implement SMS logic
+  }
+
+  void _shareAction() {
+    Share.share(
+      'Regarde ce service sur BricoRasy : '
+      '${widget.service.name} à ${widget.service.localisation}',
+    );
   }
 
   void sendReport(String message) async {
-    if (_service == null) return;
-    final String annonceId = _service!.id;
-    const String placeholderUserId = "user_abc123"; // TODO: Replace with actual logged-in user ID from your auth system
-
-    final String reportUrl = "$API_BASE_URL_FOR_REPORTS/api/reports"; // Ensure this endpoint is correct
+    final annonceId = widget.service.id;
+    const userId = "user_abc"; // TODO: replace with actual user
+    final url = Uri.parse('$API_BASE_URL/api/reports');
 
     try {
-       final response = await http.post(
-        Uri.parse(reportUrl),
-        headers: {"Content-Type": "application/json"},
+      final resp = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          "message": message,
-          "annonceId": annonceId,
-          "userId": placeholderUserId,
-          "annonceType": "professionnel" // Optional: Backend might use this to categorize reports
+          'message': message,
+          'annonceId': annonceId,
+          'userId': userId,
+          'annonceType': 'professionnel',
         }),
       );
 
       if (!mounted) return;
-
-      if (response.statusCode == 201) {
+      if (resp.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-              content: Text("Signalement envoyé avec succès"),
-              backgroundColor: Colors.green),
+            content: Text('Signalement envoyé avec succès'),
+            backgroundColor: Colors.green,
+          ),
         );
       } else {
-        print('Report Error: ${response.statusCode} ${response.body}');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text(
-                  "Erreur lors de l'envoi du signalement (${response.statusCode})"),
-              backgroundColor: Colors.red),
+            content: Text('Erreur lors de l\'envoi (${resp.statusCode})'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } catch (e) {
-      print('Report Network Error: $e');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text("Erreur réseau lors du signalement: $e"),
-            backgroundColor: Colors.red),
+          content: Text('Erreur réseau: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
 
-  void _shareAction() {
-    if (_service == null) return;
-    Share.share(
-        'Regarde ce service professionnel sur BricoRasy : ${_service!.name} à ${_service!.localisation}');
-  }
-
   void _showReportDialog() {
+    final ctrl = TextEditingController();
     showDialog(
       context: context,
-      builder: (context) {
-        TextEditingController messageController = TextEditingController();
-        return AlertDialog(
-          title: const Text('Signaler cette annonce'),
-          content: TextField(
-            controller: messageController,
-            maxLines: 4,
-            textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(
-              hintText: 'Décrivez le problème...',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Annuler'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final message = messageController.text.trim();
-                if (message.isNotEmpty) {
-                  sendReport(message);
-                  Navigator.pop(context);
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text("Veuillez décrire le problème."),
-                        duration: Duration(seconds: 2)),
-                  );
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red, // Consider using Theme.of(context).colorScheme.error
-                foregroundColor: Colors.white, // Consider using Theme.of(context).colorScheme.onError
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Signaler cette annonce'),
+            content: TextField(
+              controller: ctrl,
+              maxLines: 4,
+              decoration: const InputDecoration(
+                hintText: 'Décrivez le problème...',
+                border: OutlineInputBorder(),
               ),
-              child: const Text('Envoyer'),
             ),
-          ],
-        );
-      },
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Annuler'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                onPressed: () {
+                  final msg = ctrl.text.trim();
+                  if (msg.isNotEmpty) {
+                    sendReport(msg);
+                    Navigator.pop(ctx);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Veuillez décrire le problème.'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                },
+                child: const Text('Envoyer'),
+              ),
+            ],
+          ),
     );
   }
 
@@ -246,208 +146,167 @@ class _ProfessionalDetailScreenState extends State<ProfessionalDetailScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      backgroundColor: Theme.of(context).cardColor, // Use theme color
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.share_outlined),
-              title: const Text('Partager'),
-              onTap: () {
-                Navigator.pop(context);
-                _shareAction();
-              },
+      builder:
+          (ctx) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.share_outlined),
+                  title: const Text('Partager'),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _shareAction();
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.flag_outlined, color: Colors.red),
+                  title: const Text(
+                    'Signaler',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _showReportDialog();
+                  },
+                ),
+                const SizedBox(height: 10),
+              ],
             ),
-            ListTile(
-              leading: Icon(Icons.flag_outlined, color: Theme.of(context).colorScheme.error),
-              title: Text('Signaler', style: TextStyle(color: Theme.of(context).colorScheme.error)),
-              onTap: () {
-                Navigator.pop(context);
-                _showReportDialog();
-              },
+          ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String text) {
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    if (text.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: muted),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              text,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: muted, height: 1.4),
             ),
-            const SizedBox(height: 10), // For bottom padding if any
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
+  String _formatDate(String raw) {
+    try {
+      final d = DateTime.parse(raw);
+      return DateFormat('d MMM yyyy', 'fr_FR').format(d);
+    } catch (_) {
+      return raw;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final Color primaryColor = Theme.of(context).primaryColor;
-    final Color onPrimaryColor = Theme.of(context).colorScheme.onPrimary;
-    final Color backgroundColor = Theme.of(context).scaffoldBackgroundColor;
-
-    if (_isLoading) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text("Chargement..."),
-          backgroundColor: primaryColor,
-          iconTheme: IconThemeData(color: onPrimaryColor),
-        ),
-        body: const Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    if (_error != null || _service == null) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text("Erreur"),
-          backgroundColor: primaryColor,
-          iconTheme: IconThemeData(color: onPrimaryColor),
-        ),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  _error ?? "Une erreur inconnue est survenue.",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: _fetchServiceDetails,
-                  child: const Text("Réessayer"),
-                )
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-
-    // At this point, _service is not null
-    final ProfessionalService currentService = _service!;
+    final svc = widget.service;
+    final primary = Theme.of(context).primaryColor;
+    final onPrimary = Theme.of(context).colorScheme.onPrimary;
+    final bg = Theme.of(context).scaffoldBackgroundColor;
 
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: bg,
       body: CustomScrollView(
-        slivers: <Widget>[
+        slivers: [
           SliverAppBar(
-            expandedHeight: 250.0,
-            floating: false,
+            expandedHeight: 250,
             pinned: true,
-            stretch: true,
-            backgroundColor: primaryColor,
-            iconTheme: IconThemeData(color: onPrimaryColor),
+            backgroundColor: primary,
+            iconTheme: IconThemeData(color: onPrimary),
             flexibleSpace: FlexibleSpaceBar(
-              centerTitle: false, // Or true, depending on your design
-              titlePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              title: Text( // Title in the collapsed app bar
-                currentService.name,
-                style: TextStyle(
-                  color: onPrimaryColor,
-                  fontSize: 16.0, // Adjust as needed
-                  fontWeight: FontWeight.bold,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
               background: Hero(
-                tag: currentService.id, // Use service id for Hero tag
-                child: currentService.imagePath.isNotEmpty && currentService.imagePath.startsWith('http')
-                    ? Image.network(
-                        currentService.imagePath,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Center(
-                            child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded /
-                                      loadingProgress.expectedTotalBytes!
-                                  : null,
-                            ),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          color: Colors.grey[300],
-                          child: Icon(Icons.broken_image_outlined, color: Colors.grey[600], size: 60),
-                        ),
-                      )
-                    : (currentService.imagePath.isNotEmpty && currentService.imagePath.startsWith('assets/'))
-                        ? Image.asset( // For local asset placeholder
-                            currentService.imagePath,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Container(
-                              color: Colors.grey[300],
-                              child: Icon(Icons.business_center_outlined, color: Colors.grey[600], size: 60),
-                            ),
-                          )
-                        : Container( // Fallback if imagePath is empty or not recognized
-                            color: Colors.grey[300],
-                            child: Icon(Icons.business_center_outlined, color: Colors.grey[600], size: 60),
-                          ),
+                tag: svc.id,
+                child:
+                    svc.imagePath.startsWith('http')
+                        ? Image.network(
+                          svc.imagePath,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (c, child, prog) {
+                            if (prog == null) return child;
+                            return Center(
+                              child: CircularProgressIndicator(
+                                value:
+                                    prog.expectedTotalBytes != null
+                                        ? prog.cumulativeBytesLoaded /
+                                            prog.expectedTotalBytes!
+                                        : null,
+                              ),
+                            );
+                          },
+                          errorBuilder:
+                              (_, __, ___) => Container(
+                                color: Colors.grey[300],
+                                child: const Icon(Icons.broken_image, size: 60),
+                              ),
+                        )
+                        : Container(color: Colors.grey[300]),
               ),
-              stretchModes: const [StretchMode.zoomBackground, StretchMode.fadeTitle],
             ),
             actions: [
               IconButton(
-                icon: Icon(Icons.more_vert, color: onPrimaryColor),
+                icon: Icon(Icons.more_vert, color: onPrimary),
                 onPressed: _showMoreOptions,
-                tooltip: 'Plus d\'options',
               ),
             ],
           ),
+
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    currentService.name,
+                    svc.name,
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  const SizedBox(height: 16.0),
+                  const SizedBox(height: 16),
                   _buildInfoRow(
-                    context,
                     Icons.category_outlined,
-                    currentService.categories.isNotEmpty ? currentService.categories.join(" • ") : "Non spécifié",
+                    svc.categories.join(" • "),
                   ),
+                  _buildInfoRow(Icons.location_on_outlined, svc.localisation),
                   _buildInfoRow(
-                    context,
-                    Icons.location_on_outlined,
-                    currentService.localisation.isNotEmpty ? currentService.localisation : "Non spécifiée",
-                  ),
-                   _buildInfoRow(
-                    context,
                     Icons.calendar_today_outlined,
-                    "Publié le: ${_formatDate(currentService.dateCreation)}",
-                  ),
-                   _buildInfoRow(
-                    context,
-                    Icons.event_busy_outlined,
-                    "Expire le: ${_formatDate(currentService.dateExpiration)}",
+                    "Publié le: ${_formatDate(svc.dateCreation)}",
                   ),
                   _buildInfoRow(
-                    context,
-                    Icons.sell_outlined,
-                    "${currentService.prix.toStringAsFixed(2)} DA",
-                    isPrice: true, // Pass the flag for price
+                    Icons.event_busy_outlined,
+                    "Expire le: ${_formatDate(svc.dateExpiration)}",
                   ),
-                  const SizedBox(height: 24.0),
+                  _buildInfoRow(
+                    Icons.sell_outlined,
+                    "${svc.prix.toStringAsFixed(2)} DA",
+                  ),
+                  const SizedBox(height: 24),
+
                   Row(
                     children: [
                       Expanded(
                         child: ElevatedButton.icon(
                           icon: const Icon(Icons.phone_outlined),
-                          label: const Text("Appeler"),
+                          label: const Text("Appelez-moi"),
                           onPressed: _callAction,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: primaryColor,
-                            foregroundColor: onPrimaryColor,
+                            backgroundColor: primary,
+                            foregroundColor: onPrimary,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            textStyle: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
@@ -458,36 +317,33 @@ class _ProfessionalDetailScreenState extends State<ProfessionalDetailScreen> {
                           label: const Text("Message"),
                           onPressed: _messageAction,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-                            foregroundColor: Theme.of(context).colorScheme.onSecondaryContainer,
+                            backgroundColor: Colors.grey[300],
+                            foregroundColor: Colors.black87,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
-                             textStyle: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24.0),
+                  const SizedBox(height: 24),
+
                   Text(
                     "Description",
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  const SizedBox(height: 8.0),
+                  const SizedBox(height: 8),
                   Text(
-                    currentService.description?.isNotEmpty == true
-                        ? currentService.description!
-                        : "Aucune description fournie.",
+                    svc.description ?? "Aucune description fournie.",
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          height: 1.5,
-                        ),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      height: 1.5,
+                    ),
                   ),
-                  const SizedBox(height: 24.0), // Bottom padding
                 ],
               ),
             ),
