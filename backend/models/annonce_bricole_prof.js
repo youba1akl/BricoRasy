@@ -35,6 +35,11 @@ const schemaBricoleProf = new mongoose.Schema({
     type: Date,
     required: [true, "La date d'expiration est requise"]
   },
+  creator: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
   photo: {
     type: [String],
     default: []

@@ -56,6 +56,7 @@ exports.createAnnonceOutil = async (req, res) => {
     const newAnnonce = new outilModel({
       titre,
       localisation,
+      creator: req.user._id,
       description,
       prix,
       type_annonce,
@@ -91,4 +92,14 @@ exports.getOutil = async (req, res) => {
       .status(500)
       .json({ error: "Erreur serveur lors de la récupération des annonces." });
   }
+};
+
+exports.deleteAnnonceOutil = async (req, res) => {
+  const annonce = await outilModel.findById(req.params.id);
+  if (!annonce) return res.status(404).json({ error: "Non trouvée" });
+  if (annonce.creator.toString() !== req.user._id.toString()) {
+    return res.status(403).json({ error: "Accès refusé" });
+  }
+  await annonce.deleteOne();
+  res.json({ message: "Supprimée" });
 };

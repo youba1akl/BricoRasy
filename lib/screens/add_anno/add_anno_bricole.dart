@@ -9,7 +9,7 @@ class TaskFormScreen extends StatefulWidget {
   const TaskFormScreen({super.key});
 
   @override
-  _TaskFormScreenState createState() => _TaskFormScreenState();
+  State<TaskFormScreen> createState() => _TaskFormScreenState();
 }
 
 class _TaskFormScreenState extends State<TaskFormScreen> {
@@ -44,7 +44,14 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   @override
   void initState() {
     super.initState();
+    // Prefill date
     _dateStartCtrl.text = DateTime.now().toIso8601String().split('T')[0];
+    // Prefill phone & mail from logged-in user
+    final user = AuthService.currentUser;
+    if (user != null) {
+      _phoneCtrl.text = user.phone;
+      _mailCtrl.text = user.email;
+    }
   }
 
   @override
@@ -55,6 +62,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     _priceCtrl.dispose();
     _dateStartCtrl.dispose();
     _dateEndCtrl.dispose();
+    _mailCtrl.dispose();
+    _phoneCtrl.dispose();
     super.dispose();
   }
 
@@ -72,27 +81,28 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   }
 
   Future<void> _pickImage() async {
-    final XFile? img = await _picker.pickImage(
+    final img = await _picker.pickImage(
       source: ImageSource.gallery,
       maxWidth: 1024,
       maxHeight: 1024,
       imageQuality: 85,
     );
-    if (img != null && _images.length < 5) {
-      setState(() => _images.add(img));
-    } else if (_images.length >= 5) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Vous ne pouvez ajouter que 5 images maximum.'),
-          backgroundColor: Colors.orange,
-        ),
-      );
+    if (img != null) {
+      if (_images.length < 5) {
+        setState(() => _images.add(img));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Vous ne pouvez ajouter que 5 images maximum.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
     }
   }
 
   Future<void> _submitForm() async {
     FocusScope.of(context).unfocus();
-
     if (!_formKey.currentState!.validate()) return;
     if (_selectedType == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -126,7 +136,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           ..fields['date_creation'] = _dateStartCtrl.text
           ..fields['date_expiration'] = _dateEndCtrl.text
           ..fields['numtel'] = _phoneCtrl.text
-          ..fields['mail'] = _mailCtrl.text;
+          ..fields['mail'] = _mailCtrl.text
+          ..headers.addAll(AuthService.authHeader);
 
     for (var img in _images) {
       req.files.add(await http.MultipartFile.fromPath('photo', img.path));
@@ -135,7 +146,6 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     try {
       final streamed = await req.send();
       final res = await http.Response.fromStream(streamed);
-
       if (!mounted) return;
 
       if (res.statusCode == 201) {
@@ -147,12 +157,10 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
         );
         Navigator.pop(context);
       } else {
-        String errorMessage = 'Erreur lors de la création (${res.statusCode})';
+        var errorMessage = 'Erreur lors de la création (${res.statusCode})';
         try {
           final body = jsonDecode(res.body);
-          if (body['message'] != null) {
-            errorMessage = body['message'];
-          }
+          if (body['message'] != null) errorMessage = body['message'];
         } catch (_) {}
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
@@ -160,9 +168,9 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Échec de la connexion: ${e.toString()}')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Échec de la connexion: $e')));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -170,20 +178,16 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final Color primaryColor = Theme.of(context).primaryColor;
-    final Color scaffoldBg = Theme.of(context).scaffoldBackgroundColor;
-    final Color onSurfaceVariant =
-        Theme.of(context).colorScheme.onSurfaceVariant;
-    final Color cardBg = Theme.of(context).cardColor;
+    final primaryColor = Theme.of(context).primaryColor;
+    final scaffoldBg = Theme.of(context).scaffoldBackgroundColor;
+    final onVariant = Theme.of(context).colorScheme.onSurfaceVariant;
+    final cardBg = Theme.of(context).cardColor;
 
     InputDecoration inputDecoration(String label, IconData icon) {
       return InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: onSurfaceVariant.withOpacity(0.7)),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.0),
-          borderSide: BorderSide(color: Colors.grey.shade400),
-        ),
+        prefixIcon: Icon(icon, color: onVariant.withOpacity(0.7)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8.0),
           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -217,7 +221,6 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Location
               TextFormField(
                 controller: _locationCtrl,
                 decoration: inputDecoration(
@@ -232,8 +235,6 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 textCapitalization: TextCapitalization.words,
               ),
               const SizedBox(height: 18),
-
-              // Title
               TextFormField(
                 controller: _titleCtrl,
                 decoration: inputDecoration('Titre de l\'annonce', Icons.title),
@@ -245,34 +246,30 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 textCapitalization: TextCapitalization.sentences,
               ),
               const SizedBox(height: 18),
-
               TextFormField(
                 controller: _phoneCtrl,
-                decoration: inputDecoration('phone', Icons.title),
+                decoration: inputDecoration('Téléphone', Icons.phone_outlined),
                 validator:
                     (v) =>
                         v == null || v.trim().isEmpty
-                            ? 'numero obligatoire'
+                            ? 'Numéro obligatoire'
                             : null,
-                textCapitalization: TextCapitalization.sentences,
               ),
               const SizedBox(height: 18),
               TextFormField(
                 controller: _mailCtrl,
-                decoration: inputDecoration('mail', Icons.title),
+                decoration: inputDecoration('Email', Icons.email_outlined),
                 validator:
                     (v) =>
                         v == null || v.trim().isEmpty
-                            ? 'mail obligatoire'
+                            ? 'Email obligatoire'
                             : null,
-                textCapitalization: TextCapitalization.sentences,
               ),
               const SizedBox(height: 18),
-              // Type dropdown
               DropdownButtonFormField<String>(
                 value: _selectedType,
                 decoration: inputDecoration(
-                  'Type de service',
+                  'Type d\'annonce',
                   Icons.category_outlined,
                 ),
                 items:
@@ -284,8 +281,6 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 dropdownColor: cardBg,
               ),
               const SizedBox(height: 18),
-
-              // Price
               TextFormField(
                 controller: _priceCtrl,
                 decoration: inputDecoration(
@@ -303,8 +298,6 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 },
               ),
               const SizedBox(height: 18),
-
-              // Description
               TextFormField(
                 controller: _descriptionCtrl,
                 decoration: inputDecoration(
@@ -315,8 +308,6 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 textCapitalization: TextCapitalization.sentences,
               ),
               const SizedBox(height: 18),
-
-              // Dates
               Row(
                 children: [
                   Expanded(
@@ -349,8 +340,6 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                   ),
                 ],
               ),
-
-              // --- Images wrap ---
               const SizedBox(height: 24),
               Text(
                 'Ajouter des images (max 5)',
@@ -359,77 +348,62 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 12),
-              SizedBox(
-                height: 100,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _images.length < 5 ? _images.length + 1 : 5,
-                  itemBuilder: (context, index) {
-                    // "Add" button
-                    if (index == _images.length && _images.length < 5) {
-                      return GestureDetector(
-                        onTap: _pickImage,
-                        child: Container(
-                          width: 100,
-                          margin: const EdgeInsets.only(right: 12),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.grey.shade400),
-                          ),
-                          child: const Icon(
-                            Icons.add_a_photo_outlined,
-                            size: 40,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      );
-                    }
-                    // Preview image
-                    final img = _images[index];
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  ..._images.map((img) {
                     return Stack(
+                      alignment: Alignment.topRight,
                       children: [
-                        Container(
-                          width: 100,
-                          margin: const EdgeInsets.only(right: 12),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            image: DecorationImage(
-                              image: FileImage(File(img.path)),
-                              fit: BoxFit.cover,
-                            ),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.file(
+                            File(img.path),
+                            width: 80,
+                            height: 80,
+                            fit: BoxFit.cover,
                           ),
                         ),
-                        // Remove button
-                        Positioned(
-                          top: 4,
-                          right: 4,
-                          child: GestureDetector(
-                            onTap:
-                                () => setState(() => _images.removeAt(index)),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.black45,
-                                shape: BoxShape.circle,
-                              ),
-                              padding: const EdgeInsets.all(4),
-                              child: const Icon(
-                                Icons.close,
-                                size: 16,
-                                color: Colors.white,
-                              ),
+                        InkWell(
+                          onTap: () => setState(() => _images.remove(img)),
+                          child: Container(
+                            margin: const EdgeInsets.all(3),
+                            decoration: BoxDecoration(
+                              color: Colors.black54,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.close,
+                              size: 16,
+                              color: Colors.white,
                             ),
                           ),
                         ),
                       ],
                     );
-                  },
-                ),
+                  }).toList(),
+                  if (_images.length < 5)
+                    InkWell(
+                      onTap: _pickImage,
+                      child: Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.grey.shade400),
+                        ),
+                        child: const Icon(
+                          Icons.add_a_photo_outlined,
+                          size: 30,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
+                ],
               ),
               const SizedBox(height: 30),
-              // --- end images wrap ---
-
-              // Submit button
               _submitting
                   ? const Center(child: CircularProgressIndicator())
                   : ElevatedButton.icon(
@@ -440,14 +414,9 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                       backgroundColor: primaryColor,
                       foregroundColor: Theme.of(context).colorScheme.onPrimary,
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      textStyle: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      elevation: 2,
                     ),
                   ),
               const SizedBox(height: 10),

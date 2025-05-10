@@ -13,6 +13,11 @@ const outilSchema=mongoose.Schema({
         type: [String],
         default: [],
       },
+      creator: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
       phone: {
     type: String,
     required: true,

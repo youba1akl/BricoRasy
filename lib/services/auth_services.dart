@@ -1,11 +1,11 @@
 // lib/services/auth_service.dart
 import 'dart:convert';
-import 'package:flutter/foundation.dart'; // For kDebugMode (optional for print statements)
-import 'package:flutter/material.dart'; // Required for BuildContext in logoutUser
+import 'package:flutter/foundation.dart'; // For kDebugMode
+import 'package:flutter/material.dart'; // For BuildContext in logoutUser
 import 'package:http/http.dart' as http;
 
 // Assuming Welcomescreen is your initial screen after logout
-import 'package:bricorasy/screens/sign_page/welcome-screen.dart'; // Adjust path if necessary
+import 'package:bricorasy/screens/sign_page/welcome-screen.dart';
 
 // --- Helper Model for Logged-In User Data ---
 class LoggedInUser {
@@ -40,10 +40,14 @@ class LoggedInUser {
       email: json['email'] as String,
       phone: json['phone'] as String,
       role: json['role'] as String,
-      profilePicture: json['profilePicture'] as String? ?? json['photo'] as String?,
+      profilePicture:
+          json['profilePicture'] as String? ?? json['photo'] as String?,
       job: json['job'] as String?,
       localisation: json['localisation'] as String?,
-      birthdate: json['birthdate'] != null ? DateTime.tryParse(json['birthdate'] as String) : null,
+      birthdate:
+          json['birthdate'] != null
+              ? DateTime.tryParse(json['birthdate'] as String)
+              : null,
       genre: json['genre'] as String?,
     );
   }
@@ -53,14 +57,28 @@ class LoggedInUser {
 // --- End of Helper Model ---
 
 class AuthService {
-  static const String baseUrl = "http://192.168.53.44:5000"; // Your local IP for backend
+  static const String baseUrl = "http://192.168.43.224:5000";
   static LoggedInUser? currentUser;
+  static String? _jwtToken;
+
+  /// Returns headers for protected routes
+  static Map<String, String> get authHeader {
+    if (_jwtToken != null) {
+      return {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $_jwtToken',
+      };
+    }
+    return {'Content-Type': 'application/json'};
+  }
 
   static void setCurrentUser(Map<String, dynamic> userData) {
     try {
       currentUser = LoggedInUser.fromJson(userData);
       if (kDebugMode) {
-        print("AuthService: User set - ID: ${currentUser!.id}, Name: ${currentUser!.fullname}, Role: ${currentUser!.role}");
+        print(
+          "AuthService: User set - ID: ${currentUser!.id}, Name: ${currentUser!.fullname}",
+        );
       }
     } catch (e) {
       if (kDebugMode) {
@@ -73,140 +91,128 @@ class AuthService {
 
   static void clearCurrentUser() {
     currentUser = null;
-    if (kDebugMode) {
-      print("AuthService: Current user cleared.");
-    }
+    _jwtToken = null;
+    if (kDebugMode) print("AuthService: Current user & token cleared.");
   }
 
   // --- Logout Method ---
   static Future<void> logoutUser(BuildContext context) async {
     clearCurrentUser();
-
-    // TODO: Optional: Call a backend logout endpoint if necessary
-    // final url = Uri.parse('$baseUrl/api/users/logout');
-    // try {
-    //   // Add headers if your logout requires authentication (e.g., a token)
-    //   // await http.post(url, headers: {'Authorization': 'Bearer YOUR_TOKEN'});
-    //   if (kDebugMode) print("AuthService: Backend logout successful (if implemented).");
-    // } catch (e) {
-    //   if (kDebugMode) print("AuthService: Error during backend logout - $e");
-    // }
-
-    // Navigate to the WelcomeScreen and remove all previous routes
-    if (context.mounted) { // Check if context is still valid before navigating
+    if (context.mounted) {
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const Welcomescreen()), // Or your login screen
-        (Route<dynamic> route) => false, // Predicate to remove all routes
+        MaterialPageRoute(builder: (_) => const Welcomescreen()),
+        (route) => false,
       );
     }
   }
   // --- End of Logout Method ---
 
+  static String? get token => _jwtToken;
   static String? get currentUserId => currentUser?.id;
   static String? get currentUserPhone => currentUser?.phone;
-  static String? get currentUserRole => currentUser?.role;
   static bool get isUserArtisan => currentUser?.isArtisan ?? false;
 
   static Future<bool> sendOtp(String email) async {
     final url = Uri.parse('$baseUrl/api/users/send-otp');
-    // ... (rest of sendOtp implementation as you had it, with kDebugMode prints)
-     try {
+    try {
       final response = await http.post(
         url,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"email": email}),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email}),
       );
-
       if (response.statusCode == 200) {
-        if (kDebugMode) print("AuthService: OTP sent successfully to $email");
+        if (kDebugMode) print("AuthService: OTP sent to $email");
         return true;
-      } else {
-        if (kDebugMode) print("AuthService: Error sending OTP to $email - ${response.statusCode}: ${response.body}");
-        return false;
       }
+      if (kDebugMode) print("AuthService: OTP error ${response.statusCode}");
+      return false;
     } catch (e) {
-      if (kDebugMode) print("AuthService: Network error sending OTP - $e");
+      if (kDebugMode) print("AuthService: OTP network error - $e");
       return false;
     }
   }
 
   static Future<bool> verifyOtp(String email, String otp) async {
     final url = Uri.parse('$baseUrl/api/users/verify-otp');
-    // ... (rest of verifyOtp implementation as you had it, with kDebugMode prints)
     try {
       final response = await http.post(
         url,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"email": email, "otp": otp}),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'otp': otp}),
       );
-
       if (response.statusCode == 200) {
-        if (kDebugMode) print("AuthService: OTP verified successfully for $email");
+        if (kDebugMode) print("AuthService: OTP verified for $email");
         return true;
-      } else {
-        if (kDebugMode) print("AuthService: OTP verification failed for $email - ${response.statusCode}: ${response.body}");
-        return false;
       }
+      if (kDebugMode)
+        print("AuthService: OTP verify error ${response.statusCode}");
+      return false;
     } catch (e) {
-      if (kDebugMode) print("AuthService: Network error verifying OTP - $e");
+      if (kDebugMode) print("AuthService: OTP verify network error - $e");
       return false;
     }
   }
 
+  /// Login : récupère le token et les infos user
   static Future<Map<String, dynamic>> loginUser(
     String email,
     String password,
   ) async {
     final url = Uri.parse('$baseUrl/api/users/login');
-    // ... (rest of loginUser implementation as you had it, ensures setCurrentUser and clearCurrentUser are called)
     try {
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({'email': email, 'password': password}),
+        body: jsonEncode({'email': email, 'password': password}),
       );
 
       if (response.statusCode == 200) {
-        final data = json.decode(response.body) as Map<String, dynamic>;
-        setCurrentUser(data);
-        return {'success': true, 'data': data};
+        final body = jsonDecode(response.body) as Map<String, dynamic>;
+        _jwtToken = body['token'] as String?;
+        final userData = body['user'] as Map<String, dynamic>;
+        setCurrentUser(userData);
+        return {'success': true, 'data': userData};
       } else {
-        final errorMessage = json.decode(response.body)['message'] as String? ?? 'Erreur de connexion inconnue';
-        if (kDebugMode) print("AuthService: Login failed - ${response.statusCode}: $errorMessage");
+        final msg =
+            jsonDecode(response.body)['message'] as String? ??
+            'Erreur inconnue';
         clearCurrentUser();
-        return {'success': false, 'message': errorMessage};
+        return {'success': false, 'message': msg};
       }
     } catch (e) {
-      if (kDebugMode) print("AuthService: Network error during login - $e");
       clearCurrentUser();
-      return {'success': false, 'message': 'Erreur réseau lors de la connexion: $e'};
+      return {'success': false, 'message': 'Erreur réseau: $e'};
     }
   }
 
-  // It's highly recommended to implement registerUser to also call setCurrentUser
-  static Future<Map<String, dynamic>> registerUser(Map<String, dynamic> registrationData) async {
+  /// Inscription : idem, stocke token + user
+  static Future<Map<String, dynamic>> registerUser(
+    Map<String, dynamic> registrationData,
+  ) async {
     final url = Uri.parse('$baseUrl/api/users/register');
     try {
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
-        body: json.encode(registrationData),
+        body: jsonEncode(registrationData),
       );
-      if (response.statusCode == 201) { // HTTP 201 Created for successful registration
-        final data = json.decode(response.body) as Map<String, dynamic>;
-        setCurrentUser(data); // Set the full user data upon successful registration
-        if (kDebugMode) print("AuthService: Registration successful, user set.");
-        return {'success': true, 'data': data};
+
+      if (response.statusCode == 201) {
+        final body = jsonDecode(response.body) as Map<String, dynamic>;
+        _jwtToken = body['token'] as String?;
+        final userData = body['user'] as Map<String, dynamic>;
+        setCurrentUser(userData);
+        return {'success': true, 'data': userData};
       } else {
-        final errorMessage = json.decode(response.body)['message'] as String? ?? 'Erreur d\'inscription inconnue';
-        if (kDebugMode) print("AuthService: Registration failed - ${response.statusCode}: $errorMessage");
-        clearCurrentUser(); // Ensure no partial user data is set
-        return {'success': false, 'message': errorMessage};
+        final msg =
+            jsonDecode(response.body)['message'] as String? ??
+            'Erreur inscription';
+        clearCurrentUser();
+        return {'success': false, 'message': msg};
       }
     } catch (e) {
-      if (kDebugMode) print("AuthService: Network error during registration - $e");
       clearCurrentUser();
-      return {'success': false, 'message': 'Erreur réseau lors de l\'inscription: $e'};
+      return {'success': false, 'message': 'Erreur réseau: $e'};
     }
   }
 }

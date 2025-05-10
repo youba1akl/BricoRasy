@@ -62,6 +62,7 @@ exports.create_annonce_prof = async (req, res) => {
     const newAnnonce = new Annonce({
       name:            titre,
       description,
+      creator: req.user._id,
       prix,
       localisation,
       numtel,         // ← your phone field
@@ -113,4 +114,16 @@ exports.getAnnonceProfById = async (req, res) => {
     console.error('Error fetching professional service by ID:', error);
     res.status(500).json({ message: 'Erreur serveur', error: error.message });
   }
+};
+
+
+
+exports.deleteAnnoncePro = async (req, res) => {
+  const annonce = await Annonce.findById(req.params.id);
+  if (!annonce) return res.status(404).json({ error: "Non trouvée" });
+  if (annonce.creator.toString() !== req.user._id.toString()) {
+    return res.status(403).json({ error: "Accès refusé" });
+  }
+  await annonce.deleteOne();
+  res.json({ message: "Supprimée" });
 };

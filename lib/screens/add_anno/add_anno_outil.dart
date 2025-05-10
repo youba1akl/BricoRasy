@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:bricorasy/services/auth_services.dart';
 
 class AddAnnoOutil extends StatefulWidget {
   const AddAnnoOutil({super.key});
@@ -18,9 +19,9 @@ class _AddAnnoOutilState extends State<AddAnnoOutil> {
   final _locationCtrl = TextEditingController();
   final _titleCtrl = TextEditingController();
   final _priceCtrl = TextEditingController();
-  final _durationCtrl = TextEditingController(); // Duration specific to tools
+  final _durationCtrl = TextEditingController();
   final _descriptionCtrl = TextEditingController();
-  final _dateCtrl = TextEditingController(); // Creation date
+  final _dateCtrl = TextEditingController();
   final _mailCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
 
@@ -33,15 +34,22 @@ class _AddAnnoOutilState extends State<AddAnnoOutil> {
   final List<String> _categories = [
     'Outil jardinage',
     'Outil construction',
-    'Électrique', // Added category
-    'Manuel', // Added category
+    'Électrique',
+    'Manuel',
     'Autre',
   ];
 
   @override
   void initState() {
     super.initState();
+    // Prefill creation date
     _dateCtrl.text = DateTime.now().toIso8601String().split('T')[0];
+    // Prefill phone & email from logged-in user
+    final user = AuthService.currentUser;
+    if (user != null) {
+      _phoneCtrl.text = user.phone;
+      _mailCtrl.text = user.email;
+    }
   }
 
   @override
@@ -52,6 +60,8 @@ class _AddAnnoOutilState extends State<AddAnnoOutil> {
     _durationCtrl.dispose();
     _descriptionCtrl.dispose();
     _dateCtrl.dispose();
+    _mailCtrl.dispose();
+    _phoneCtrl.dispose();
     super.dispose();
   }
 
@@ -64,7 +74,6 @@ class _AddAnnoOutilState extends State<AddAnnoOutil> {
     );
     if (img != null) {
       if (_images.length < 5) {
-        // Limit images
         setState(() => _images.add(img));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -77,7 +86,6 @@ class _AddAnnoOutilState extends State<AddAnnoOutil> {
     }
   }
 
-  // Using same date picker as other forms
   Future<void> _selectDate(TextEditingController ctrl) async {
     final picked = await showDatePicker(
       context: context,
@@ -91,10 +99,8 @@ class _AddAnnoOutilState extends State<AddAnnoOutil> {
     }
   }
 
-  // --- Submit Form ---
   Future<void> _submitForm() async {
     FocusScope.of(context).unfocus();
-
     if (!_formKey.currentState!.validate()) return;
     if (_selectedCategory == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -116,26 +122,19 @@ class _AddAnnoOutilState extends State<AddAnnoOutil> {
     }
 
     setState(() => _submitting = true);
-
-    // Use 127.0.0.1 as requested
     final uri = Uri.parse('http://10.0.2.2:5000/api/annonce/outil');
     final req =
         http.MultipartRequest('POST', uri)
+          ..headers.addAll(AuthService.authHeader)
           ..fields['localisation'] = _locationCtrl.text
           ..fields['titre'] = _titleCtrl.text
           ..fields['type_annonce'] = _selectedCategory!
           ..fields['prix'] = _priceCtrl.text.replaceAll(',', '.')
-          ..fields['duree_location'] =
-              _durationCtrl
-                  .text // Duration field
+          ..fields['duree_location'] = _durationCtrl.text
           ..fields['description'] = _descriptionCtrl.text
           ..fields['date_creation'] = _dateCtrl.text
-          ..fields['phone'] =
-              _phoneCtrl
-                  .text // ← here
+          ..fields['phone'] = _phoneCtrl.text
           ..fields['mail'] = _mailCtrl.text;
-
-    // TODO: Add user ID
 
     for (var img in _images) {
       req.files.add(await http.MultipartFile.fromPath('photo', img.path));
@@ -144,9 +143,7 @@ class _AddAnnoOutilState extends State<AddAnnoOutil> {
     try {
       final streamed = await req.send();
       final res = await http.Response.fromStream(streamed);
-
       if (!mounted) return;
-
       if (res.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -156,80 +153,64 @@ class _AddAnnoOutilState extends State<AddAnnoOutil> {
         );
         Navigator.pop(context);
       } else {
-        print("Submit Error: ${res.statusCode} ${res.body}");
-        String errorMessage = 'Erreur lors de la création (${res.statusCode})';
+        var errorMessage = 'Erreur lors de la création (${res.statusCode})';
         try {
           final body = jsonDecode(res.body);
-          if (body['message'] != null) {
-            errorMessage = body['message'];
-          }
+          if (body['message'] != null) errorMessage = body['message'];
         } catch (_) {}
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
         );
       }
     } catch (e) {
-      print("Submit Exception: ${e.toString()}");
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Échec de la connexion: ${e.toString()}')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Échec de la connexion: $e')));
     } finally {
-      if (mounted) {
-        setState(() => _submitting = false);
-      }
+      if (mounted) setState(() => _submitting = false);
     }
   }
 
-  // --- Build Method ---
   @override
   Widget build(BuildContext context) {
-    // Get theme colors
-    final Color primaryColor = Theme.of(context).primaryColor;
-    final Color scaffoldBackgroundColor =
-        Theme.of(context).scaffoldBackgroundColor;
-    final Color onSurfaceVariantColor =
-        Theme.of(context).colorScheme.onSurfaceVariant;
-    final Color cardColor = Theme.of(context).cardColor;
+    final primary = Theme.of(context).primaryColor;
+    final bg = Theme.of(context).scaffoldBackgroundColor;
+    final onVar = Theme.of(context).colorScheme.onSurfaceVariant;
+    final card = Theme.of(context).cardColor;
 
-    // Reusable input decoration
     InputDecoration inputDecoration(String label, IconData icon) {
       return InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: onSurfaceVariantColor.withOpacity(0.7)),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.0),
-          borderSide: BorderSide(color: Colors.grey.shade400),
-        ),
+        prefixIcon: Icon(icon, color: onVar.withOpacity(0.7)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.0),
+          borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(color: Colors.grey.shade300),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.0),
-          borderSide: BorderSide(color: primaryColor, width: 1.5),
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: primary, width: 1.5),
         ),
         filled: true,
-        fillColor: cardColor.withAlpha(150),
+        fillColor: card.withAlpha(150),
         contentPadding: const EdgeInsets.symmetric(
-          vertical: 14.0,
-          horizontal: 12.0,
+          vertical: 14,
+          horizontal: 12,
         ),
       );
     }
 
     return Scaffold(
-      backgroundColor: scaffoldBackgroundColor,
+      backgroundColor: bg,
       appBar: AppBar(
-        title: const Text("Ajouter un Outil"), // Updated title
+        title: const Text("Ajouter un Outil"),
         centerTitle: true,
-        backgroundColor:
-            Theme.of(context).appBarTheme.backgroundColor ?? cardColor,
-        foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
-        elevation: 1.0,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor ?? card,
+        elevation: 1,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(20),
         child: Form(
           key: _formKey,
           child: Column(
@@ -254,10 +235,7 @@ class _AddAnnoOutilState extends State<AddAnnoOutil> {
               // Title
               TextFormField(
                 controller: _titleCtrl,
-                decoration: inputDecoration(
-                  "Nom de l'outil",
-                  Icons.title,
-                ), // Adjusted label
+                decoration: inputDecoration("Nom de l'outil", Icons.title),
                 validator:
                     (v) =>
                         v == null || v.trim().isEmpty
@@ -280,7 +258,7 @@ class _AddAnnoOutilState extends State<AddAnnoOutil> {
                         .toList(),
                 onChanged: (v) => setState(() => _selectedCategory = v),
                 validator: (v) => v == null ? "Choisissez une catégorie" : null,
-                dropdownColor: cardColor,
+                dropdownColor: card,
               ),
               const SizedBox(height: 18),
 
@@ -288,9 +266,9 @@ class _AddAnnoOutilState extends State<AddAnnoOutil> {
               TextFormField(
                 controller: _priceCtrl,
                 decoration: inputDecoration(
-                  "Prix de location (DA / jour)",
+                  "Prix (DA / jour)",
                   Icons.local_offer_outlined,
-                ), // Adjusted label
+                ),
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
@@ -307,9 +285,9 @@ class _AddAnnoOutilState extends State<AddAnnoOutil> {
               TextFormField(
                 controller: _durationCtrl,
                 decoration: inputDecoration(
-                  "Durée max. location (jours)",
+                  "Durée max. (jours)",
                   Icons.timer_outlined,
-                ), // Changed icon
+                ),
                 keyboardType: TextInputType.number,
                 validator: (v) {
                   if (v == null || v.trim().isEmpty) return 'Durée obligatoire';
@@ -320,28 +298,34 @@ class _AddAnnoOutilState extends State<AddAnnoOutil> {
               ),
               const SizedBox(height: 18),
 
+              // Phone
               TextFormField(
                 controller: _phoneCtrl,
-                decoration: inputDecoration('phone', Icons.title),
+                decoration: inputDecoration('Téléphone', Icons.phone),
+                keyboardType: TextInputType.phone,
+                autofillHints: const [AutofillHints.telephoneNumber],
                 validator:
                     (v) =>
                         v == null || v.trim().isEmpty
-                            ? 'numero obligatoire'
+                            ? 'Numéro obligatoire'
                             : null,
-                textCapitalization: TextCapitalization.sentences,
               ),
               const SizedBox(height: 18),
+
+              // Email
               TextFormField(
                 controller: _mailCtrl,
-                decoration: inputDecoration('mail', Icons.title),
+                decoration: inputDecoration('Email', Icons.email),
+                keyboardType: TextInputType.emailAddress,
+                autofillHints: const [AutofillHints.email],
                 validator:
                     (v) =>
                         v == null || v.trim().isEmpty
-                            ? 'mail obligatoire'
+                            ? 'Email obligatoire'
                             : null,
-                textCapitalization: TextCapitalization.sentences,
               ),
               const SizedBox(height: 18),
+
               // Description
               TextFormField(
                 controller: _descriptionCtrl,
@@ -354,30 +338,30 @@ class _AddAnnoOutilState extends State<AddAnnoOutil> {
               ),
               const SizedBox(height: 18),
 
-              // Creation Date (Maybe not needed if backend sets it?)
-              // If needed, uncomment:
-              // TextFormField(
-              //   controller: _dateCtrl,
-              //   readOnly: true,
-              //   decoration: inputDecoration('Date de création', Icons.calendar_today_outlined),
-              //   onTap: () => _selectDate(_dateCtrl),
-              // ),
-              // const SizedBox(height: 24),
+              // Creation Date
+              TextFormField(
+                controller: _dateCtrl,
+                readOnly: true,
+                decoration: inputDecoration(
+                  'Date de création',
+                  Icons.calendar_today_outlined,
+                ),
+                onTap: () => _selectDate(_dateCtrl),
+              ),
+              const SizedBox(height: 24),
 
-              // Images Section
+              // Images
               Text(
                 'Ajouter des Images (max 5)',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 12),
               Wrap(
                 spacing: 10,
                 runSpacing: 10,
                 children: [
-                  ..._images.map(
-                    (img) => Stack(
+                  for (var img in _images)
+                    Stack(
                       alignment: Alignment.topRight,
                       children: [
                         ClipRRect(
@@ -389,12 +373,12 @@ class _AddAnnoOutilState extends State<AddAnnoOutil> {
                             fit: BoxFit.cover,
                           ),
                         ),
-                        InkWell(
+                        GestureDetector(
                           onTap: () => setState(() => _images.remove(img)),
                           child: Container(
                             margin: const EdgeInsets.all(3),
                             decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.6),
+                              color: Colors.black54,
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(
@@ -406,26 +390,21 @@ class _AddAnnoOutilState extends State<AddAnnoOutil> {
                         ),
                       ],
                     ),
-                  ),
                   if (_images.length < 5)
                     InkWell(
                       onTap: _pickImage,
-                      borderRadius: BorderRadius.circular(8),
                       child: Container(
                         width: 80,
                         height: 80,
                         decoration: BoxDecoration(
                           color: Colors.grey[200],
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: Colors.grey.shade400,
-                            style: BorderStyle.solid,
-                          ),
+                          border: Border.all(color: Colors.grey.shade400),
                         ),
-                        child: Icon(
+                        child: const Icon(
                           Icons.add_a_photo_outlined,
-                          color: Colors.grey[700],
                           size: 30,
+                          color: Colors.grey,
                         ),
                       ),
                     ),
@@ -433,25 +412,14 @@ class _AddAnnoOutilState extends State<AddAnnoOutil> {
               ),
               const SizedBox(height: 30),
 
-              // Submit Button
               _submitting
                   ? const Center(child: CircularProgressIndicator())
                   : ElevatedButton.icon(
                     icon: const Icon(Icons.check_circle_outline),
-                    label: const Text('Ajouter l\'outil'), // Adjusted text
+                    label: const Text('Ajouter l\'outil'),
                     onPressed: _submitForm,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryColor,
-                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      textStyle: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      elevation: 2,
                     ),
                   ),
               const SizedBox(height: 10),

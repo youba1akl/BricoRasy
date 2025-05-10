@@ -1,40 +1,47 @@
+// lib/services/api_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:bricorasy/models/bricole_service.dart';
 import 'package:bricorasy/models/professional_service.dart';
 import 'package:bricorasy/models/dummy_tool.dart';
+import 'package:bricorasy/services/auth_services.dart'; // ← on importe AuthService
 
 class apiservice {
   static const _baseUrl = 'http://10.0.2.2:5000';
 
   static Future<List<BricoleService>> fetchServices() async {
     final uri = Uri.parse('$_baseUrl/api/annonce/bricole');
+    final response = await http.get(
+      uri,
+      headers: AuthService.authHeader, // ← on ajoute l’en-tête JWT
+    );
 
-    final reponse = await http.get(uri);
-
-    if (reponse.statusCode != 200) {
-      throw Exception('Échec du chargement: ${reponse.statusCode}');
+    if (response.statusCode != 200) {
+      throw Exception('Échec du chargement: ${response.statusCode}');
     }
-    final List<dynamic> data = jsonDecode(reponse.body) as List<dynamic>;
+    final data = jsonDecode(response.body) as List;
     return data
-        .map((json) => BricoleService.fromJson(json as Map<String, dynamic>))
+        .map((e) => BricoleService.fromJson(e as Map<String, dynamic>))
         .toList();
   }
 }
 
 class apiService_pro {
   static const _baseUrl = 'http://10.0.2.2:5000';
+
   static Future<List<ProfessionalService>> fetchServicePro() async {
     final uri = Uri.parse('$_baseUrl/api/annonce/professionnel');
-    final reponse = await http.get(uri);
-    if (reponse.statusCode != 200) {
-      throw Exception('Échec du chargement: ${reponse.statusCode}');
+    final response = await http.get(
+      uri,
+      headers: AuthService.authHeader, // ← idem ici
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Échec du chargement: ${response.statusCode}');
     }
-    final List<dynamic> data = jsonDecode(reponse.body) as List<dynamic>;
+    final data = jsonDecode(response.body) as List;
     return data
-        .map(
-          (json) => ProfessionalService.fromJson(json as Map<String, dynamic>),
-        )
+        .map((e) => ProfessionalService.fromJson(e as Map<String, dynamic>))
         .toList();
   }
 }
@@ -44,14 +51,17 @@ class apiService_outil {
 
   static Future<List<DummyTool>> fetchTools() async {
     final uri = Uri.parse('$_baseUrl/api/annonce/outil');
-    final reponse = await http.get(uri);
+    final response = await http.get(
+      uri,
+      headers: AuthService.authHeader, // ← et ici
+    );
 
-    if (reponse.statusCode != 200) {
-      throw Exception('Échec du chargement: ${reponse.statusCode}');
+    if (response.statusCode != 200) {
+      throw Exception('Échec du chargement: ${response.statusCode}');
     }
-    final List<dynamic> data = jsonDecode(reponse.body) as List<dynamic>;
+    final data = jsonDecode(response.body) as List;
     return data
-        .map((json) => DummyTool.fromJson(json as Map<String, dynamic>))
+        .map((e) => DummyTool.fromJson(e as Map<String, dynamic>))
         .toList();
   }
 }
