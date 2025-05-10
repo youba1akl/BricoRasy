@@ -69,21 +69,23 @@ console.log(req.body); // ← ajoute ça temporairement
 exports.getAnnonceBricole = async (req, res) => {
   try {
     const all = await Annonce
-      .find()
-      .sort({ date_creation:-1 });
+      .find({ visible: true })
+      .sort({ date_creation: -1 });
     res.json(all);
-  } catch(err) {
+  } catch (err) {
     console.error("Erreur lecture annonces :", err);
-    res.status(500).json({ error:"Erreur serveur" });
+    res.status(500).json({ error: "Erreur serveur" });
   }
 };
 
-exports.deleteAnnonceBricole = async (req, res) => {
+
+exports.deactivateAnnonceBricole = async (req, res) => {
   const annonce = await Annonce.findById(req.params.id);
   if (!annonce) return res.status(404).json({ error: "Non trouvée" });
   if (annonce.creator.toString() !== req.user._id.toString()) {
     return res.status(403).json({ error: "Accès refusé" });
   }
-  await annonce.deleteOne();
-  res.json({ message: "Supprimée" });
+  annonce.visible = false;
+  await annonce.save();
+  res.json({ message: "Annonce désactivée" });
 };

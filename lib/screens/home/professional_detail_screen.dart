@@ -3,11 +3,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
 
 import 'package:bricorasy/models/professional_service.dart';
+import 'package:bricorasy/services/auth_services.dart';
 
 const String API_BASE_URL = "http://10.0.2.2:5000";
 
@@ -46,11 +46,46 @@ class _ProfessionalDetailScreenState extends State<ProfessionalDetailScreen> {
     // TODO: implement SMS logic
   }
 
-  void _shareAction() {
-    Share.share(
-      'Regarde ce service sur BricoRasy : '
-      '${widget.service.name} à ${widget.service.localisation}',
-    );
+  Future<void> _desactivateAction() async {
+    final id = widget.service.id;
+    final url = Uri.parse('$API_BASE_URL/api/annonce/professionnel/$id');
+
+    try {
+      final resp = await http.patch(
+        url,
+        headers: AuthService.authHeader, // ← attach JWT header
+      );
+      if (!mounted) return;
+
+      if (resp.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Annonce désactivée'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.of(
+          context,
+        ).pop(true); // return `true` to signal list to refresh
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Erreur lors de la désactivation (${resp.statusCode})',
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erreur réseau: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void sendReport(String message) async {
@@ -152,11 +187,14 @@ class _ProfessionalDetailScreenState extends State<ProfessionalDetailScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 ListTile(
-                  leading: const Icon(Icons.share_outlined),
-                  title: const Text('Partager'),
+                  leading: const Icon(
+                    Icons.delete_outline,
+                    color: Colors.orange,
+                  ),
+                  title: const Text('Désactiver'),
                   onTap: () {
                     Navigator.pop(ctx);
-                    _shareAction();
+                    _desactivateAction();
                   },
                 ),
                 ListTile(
@@ -260,7 +298,6 @@ class _ProfessionalDetailScreenState extends State<ProfessionalDetailScreen> {
               ),
             ],
           ),
-
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -289,10 +326,9 @@ class _ProfessionalDetailScreenState extends State<ProfessionalDetailScreen> {
                   ),
                   _buildInfoRow(
                     Icons.sell_outlined,
-                    "${svc.prix.toStringAsFixed(2)} DA",
+                    "${svc.prix.toString()} DA",
                   ),
                   const SizedBox(height: 24),
-
                   Row(
                     children: [
                       Expanded(
@@ -329,7 +365,6 @@ class _ProfessionalDetailScreenState extends State<ProfessionalDetailScreen> {
                     ],
                   ),
                   const SizedBox(height: 24),
-
                   Text(
                     "Description",
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(

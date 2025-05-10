@@ -23,6 +23,10 @@ const outilSchema=mongoose.Schema({
     required: true,
     trim: true,
   },
+  visible: {
+    type: Boolean,
+    default: true
+  },
   mail: {
     type: String,
     required: true,

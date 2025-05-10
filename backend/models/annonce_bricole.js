@@ -48,7 +48,10 @@ const annonceSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
-
+visible: {
+    type: Boolean,
+    default: true
+  },
   photo: {
     type: [String],
     default: [],

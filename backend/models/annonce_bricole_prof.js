@@ -40,6 +40,10 @@ const schemaBricoleProf = new mongoose.Schema({
     ref: 'User',
     required: true
   },
+  visible: {
+    type: Boolean,
+    default: true
+  },
   photo: {
     type: [String],
     default: []

@@ -5,7 +5,7 @@ const {
   upload,
   createAnnonceBricole,
   getAnnonceBricole,
-  deleteAnnonceBricole
+  deactivateAnnonceBricole
 } = require("../controllers/apianno");
 
 router.post(
@@ -21,7 +21,7 @@ router.get(
   getAnnonceBricole
 );
 
-router.delete("/bricole/:id", auth, deleteAnnonceBricole);
+router.delete("/bricole/:id", auth, deactivateAnnonceBricole);
 
 
 module.exports = router;

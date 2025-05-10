@@ -7,7 +7,7 @@ const {
   upload,
   createAnnonceOutil,
   getOutil,
-  deleteAnnonceOutil
+  deactivateAnnonceOutil
 } = require('../controllers/api_outil');
 
 
@@ -20,5 +20,5 @@ router.post(
 );
 
 router.get('/outil', auth,getOutil);
-router.delete("/bricole/:id", auth, deleteAnnonceOutil);
+router.patch("/outil/:id", auth, deactivateAnnonceOutil);
 module.exports = router;

@@ -3,7 +3,7 @@ const express = require('express');
 const multer  = require('multer');
 const path    = require('path');
 const auth    = require("../middleware/auth");
-const {upload, create_annonce_prof, getAnnonce_prof, getAnnonceProfById,deleteAnnoncePro } = require('../controllers/api_annonce_prof_Controller');
+const {upload, create_annonce_prof, getAnnonce_prof, getAnnonceProfById,deactivateAnnonceBricole } = require('../controllers/api_annonce_prof_Controller');
 
 const router = express.Router();
 
@@ -17,6 +17,6 @@ router.get('/professionnel', auth, getAnnonce_prof);
 
 // GET    /api/annonce/professionnel/:id (single)
 router.get('/professionnel/:id', getAnnonceProfById);
-router.delete("/bricole/:id", auth, deleteAnnoncePro);
+router.patch("/professionnel/:id", auth, deactivateAnnonceBricole);
 
 module.exports = router;

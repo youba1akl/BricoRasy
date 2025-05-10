@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
 
 import 'package:bricorasy/models/bricole_service.dart';
+import 'package:bricorasy/services/auth_services.dart';
 
 const String API_BASE_URL = "http://10.0.2.2:5000";
 
@@ -94,11 +95,46 @@ class _BricolescreenState extends State<Bricolescreen> {
   }
 
   // Share
-  void _shareAction() {
-    Share.share(
-      'Regarde ce service sur BricoRasy : '
-      '${widget.service.name} à ${widget.service.localisation}',
-    );
+  Future<void> _desactivateAction() async {
+    final id = widget.service.id;
+    final url = Uri.parse('$API_BASE_URL/api/annonce/bricole/$id');
+
+    try {
+      final resp = await http.patch(
+        url,
+        headers: AuthService.authHeader, // ← attach JWT header
+      );
+      if (!mounted) return;
+
+      if (resp.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Annonce désactivée'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.of(
+          context,
+        ).pop(true); // return `true` to signal list to refresh
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Erreur lors de la désactivation (${resp.statusCode})',
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erreur réseau: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   // Show report dialog
@@ -158,11 +194,13 @@ class _BricolescreenState extends State<Bricolescreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 ListTile(
-                  leading: const Icon(Icons.share_outlined),
-                  title: const Text('Partager'),
+                  leading: const Icon(
+                    Icons.delete_outline,
+                    color: Colors.orange,
+                  ),
                   onTap: () {
                     Navigator.pop(context);
-                    _shareAction();
+                    _desactivateAction();
                   },
                 ),
                 ListTile(

@@ -87,7 +87,7 @@ exports.create_annonce_prof = async (req, res) => {
 // GET all
 exports.getAnnonce_prof = async (req, res) => {
   try {
-    const annonces = await Annonce.find().sort({ date_creation: -1 });
+    const annonces = await Annonce.find({ visible: true }).sort({ date_creation: -1 });
     const transformed = annonces.map(a => {
       const j = a.toJSON();
       return { ...j, id: a._id };
@@ -118,12 +118,13 @@ exports.getAnnonceProfById = async (req, res) => {
 
 
 
-exports.deleteAnnoncePro = async (req, res) => {
+exports.deactivateAnnonceBricole = async (req, res) => {
   const annonce = await Annonce.findById(req.params.id);
   if (!annonce) return res.status(404).json({ error: "Non trouvée" });
   if (annonce.creator.toString() !== req.user._id.toString()) {
     return res.status(403).json({ error: "Accès refusé" });
   }
-  await annonce.deleteOne();
-  res.json({ message: "Supprimée" });
+  annonce.visible = false;
+  await annonce.save();
+  res.json({ message: "Annonce désactivée" });
 };
