@@ -53,7 +53,7 @@ class LoggedInUser {
 // --- End of Helper Model ---
 
 class AuthService {
-  static const String baseUrl = "http://192.168.1.3:5000"; // Your local IP for backend
+  static const String baseUrl = "http://192.168.53.44:5000"; // Your local IP for backend
   static LoggedInUser? currentUser;
 
   static void setCurrentUser(Map<String, dynamic> userData) {
