@@ -63,6 +63,7 @@ class _ProfessionalDetailScreenState extends State<ProfessionalDetailScreen> {
                   widget
                       .service
                       .idc, // ID du créateur (à ajouter dans ProfessionalService)
+              initialMessage: "je veux postuler",
             ),
       ),
     );
@@ -316,7 +317,7 @@ class _ProfessionalDetailScreenState extends State<ProfessionalDetailScreen> {
                       Expanded(
                         child: ElevatedButton.icon(
                           icon: const Icon(Icons.message_outlined),
-                          label: const Text('Message'),
+                          label: const Text('Postuler'),
                           onPressed: _messageAction,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.grey[300],

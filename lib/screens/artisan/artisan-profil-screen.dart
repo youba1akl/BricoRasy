@@ -11,6 +11,9 @@ import 'package:http/http.dart' as http;
 
 import '../../widgets/poste_custom.dart';
 import '../../widgets/tarif_custom.dart';
+import 'package:bricorasy/services/auth_services.dart';
+import 'package:bricorasy/services/socket_service.dart';
+import 'package:bricorasy/screens/personnel_page/chat-screen.dart';
 
 enum ProfileView { postes, avis }
 
@@ -175,24 +178,41 @@ class _ArtisanprofilscreenState extends State<Artisanprofilscreen> {
     );
   }
 
-  Future<void> _handleCall() async {
-    if (widget.artisan.numTel.isEmpty) return;
-    final uri = Uri(scheme: 'tel', path: widget.artisan.numTel);
+  Future<void> _launchDialer(String phone) async {
+    final uri = Uri(scheme: 'tel', path: phone);
     if (!await launchUrl(uri)) {
-      if (mounted)
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Impossible d’appeler : ${widget.artisan.numTel}"),
-          ),
-        );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Impossible d’appeler : $phone')));
     }
   }
 
-  void _handleMessage() {
-    if (mounted)
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Messagerie à implémenter.")),
-      );
+  void _callAction() {
+    final phone = widget.artisan.numTel;
+    if (phone.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Numéro indisponible')));
+      return;
+    }
+    _launchDialer(phone);
+  }
+
+  /// Ouvre la conversation Socket.IO sur cette annonce
+  void _messageAction() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (_) => Chatscreen(
+              username: widget.artisan.fullname, // Nom ou titre de l’annonce
+              annonceId: widget.artisan.id.toString(), // ID de l’annonce
+              peerId:
+                  widget.artisan.id
+                      .toString(), // ID du créateur (à rajouter dans votre modèle)
+            ),
+      ),
+    );
   }
 
   void _handleMoreOptions() {
@@ -363,7 +383,7 @@ class _ArtisanprofilscreenState extends State<Artisanprofilscreen> {
                             child: ElevatedButton.icon(
                               icon: const Icon(Icons.phone_outlined),
                               label: const Text("Appeler"),
-                              onPressed: _handleCall,
+                              onPressed: _callAction,
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -371,7 +391,7 @@ class _ArtisanprofilscreenState extends State<Artisanprofilscreen> {
                             child: OutlinedButton.icon(
                               icon: const Icon(Icons.message_outlined),
                               label: const Text("Message"),
-                              onPressed: _handleMessage,
+                              onPressed: _messageAction,
                             ),
                           ),
                         ],

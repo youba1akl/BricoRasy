@@ -57,6 +57,7 @@ class _BricolescreenState extends State<Bricolescreen> {
           username: widget.service.name,           // Nom ou titre de l’annonce
           annonceId: widget.service.id,            // ID de l’annonce
           peerId: widget.service.idc,       // ID du créateur (à rajouter dans votre modèle)
+          initialMessage: 'Je veux postuler',
         ),
       ),
     );
@@ -257,7 +258,7 @@ class _BricolescreenState extends State<Bricolescreen> {
                   Expanded(
                     child: ElevatedButton.icon(
                       icon: const Icon(Icons.message_outlined),
-                      label: const Text('Message'),
+                      label: const Text('Postuler'),
                       onPressed: _messageAction,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.grey[300],
@@ -272,7 +273,7 @@ class _BricolescreenState extends State<Bricolescreen> {
                 Text('Description',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
-                Text(widget.service.name ?? 'Pas de description détaillée'),
+                Text(widget.service.description ?? 'Pas de description détaillée'),
               ]),
             ),
           ),

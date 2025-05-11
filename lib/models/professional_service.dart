@@ -37,13 +37,16 @@ class ProfessionalService {
     final idc = safeString(json['idc']);
     final description = safeString(json['description']);
 
-    // parse prix
+    // parse prix en gérant Decimal128 de Mongo
     double prixValue = 0.0;
     final rawPrix = json['prix'];
     if (rawPrix is String) {
       prixValue = double.tryParse(rawPrix) ?? 0.0;
     } else if (rawPrix is num) {
       prixValue = rawPrix.toDouble();
+    } else if (rawPrix is Map<String, dynamic> &&
+        rawPrix.containsKey(r'$numberDecimal')) {
+      prixValue = double.tryParse(rawPrix[r'$numberDecimal']) ?? 0.0;
     }
 
     // photos → first URL

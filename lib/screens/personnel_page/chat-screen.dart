@@ -1,4 +1,4 @@
-// lib/screens/personnel_page/chat_screen.dart
+// lib/screens/personnel_page/chat-screen.dart
 
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -13,12 +13,14 @@ class Chatscreen extends StatefulWidget {
   final String username;
   final String peerId;
   final String annonceId;
+  final String? initialMessage; // ← new
 
   const Chatscreen({
     super.key,
     required this.username,
     required this.peerId,
     required this.annonceId,
+    this.initialMessage, // ← new
   });
 
   @override
@@ -37,6 +39,16 @@ class _ChatscreenState extends State<Chatscreen> {
     super.initState();
     socket = SocketService.socket;
     socket.emit('joinAnnonce', widget.annonceId);
+
+    // If there is an initialMessage, send it right away:
+    if (widget.initialMessage != null &&
+        widget.initialMessage!.trim().isNotEmpty) {
+      // wait a frame so context is available
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _sendText(widget.initialMessage!);
+      });
+    }
+
     socket.on('connect_error', (err) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -84,7 +96,7 @@ class _ChatscreenState extends State<Chatscreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Erreur ${resp.statusCode} lors du chargement de l’historique',
+              'Erreur ${resp.statusCode} au chargement de l’historique',
             ),
             backgroundColor: Colors.red,
           ),
@@ -102,12 +114,11 @@ class _ChatscreenState extends State<Chatscreen> {
     }
   }
 
-  void sendMessage() async {
-    final text = _controller.text.trim();
-    if (text.isEmpty) return;
-
+  Future<void> _sendText(String text) async {
+    if (text.trim().isEmpty) return;
+    setState(() => _sending = true);
     try {
-      // 1) Envoi en HTTP pour créer le message en base
+      // 1) Persist to backend
       final resp = await http.post(
         Uri.parse('$API_BASE_URL/api/messages'),
         headers: {
@@ -120,35 +131,34 @@ class _ChatscreenState extends State<Chatscreen> {
           'content': text,
         }),
       );
-
       if (resp.statusCode != 201) {
-        // erreur côté serveur
         final error = jsonDecode(resp.body)['message'] ?? 'Erreur inattendue';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Échec enregistrement : $error')),
-        );
-        return;
+        throw error;
       }
-
-      // 2) Si tout est OK, on affiche localement
+      // 2) Add locally
       setState(() {
         messages.add({'text': text, 'isMe': true});
-        _controller.clear();
       });
-
-      // 3) On émet toujours l’événement socket pour prévenir l’autre client
+      // 3) Notify peer via socket
       socket.emit('sendMessage', {
         'annonceId': widget.annonceId,
         'toUserId': widget.peerId,
         'content': text,
       });
+      // clear input if it came from the user
+      if (widget.initialMessage == null) {
+        _controller.clear();
+      }
     } catch (e) {
-      // erreur réseau / JSON mal formé
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Erreur réseau : $e')));
+      ).showSnackBar(SnackBar(content: Text('Échec envoi : $e')));
+    } finally {
+      setState(() => _sending = false);
     }
   }
+
+  void sendMessage() => _sendText(_controller.text.trim());
 
   @override
   void dispose() {

@@ -16,7 +16,7 @@ import 'package:bricorasy/widgets/poste_custom.dart';
 import 'package:bricorasy/screens/personnel_page/annonce_list_screen.dart';
 
 // Use AuthService.baseUrl for consistency
-// const String API_BASE_URL = "http://10.0.2.2:5000"; // Or AuthService.baseUrl
+const String API_BASE_URL = "http://10.0.2.2:5000"; // Or AuthService.baseUrl
 
 enum ActivityView { messages, postes, annonces }
 

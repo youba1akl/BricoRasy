@@ -60,6 +60,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
           username: widget.tool.name,
           annonceId: widget.tool.id,
           peerId: widget.tool.idc, // doit être présent dans DummyTool
+          initialMessage: "",
         ),
       ),
     );

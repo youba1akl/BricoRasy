@@ -256,15 +256,29 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                             : null,
               ),
               const SizedBox(height: 18),
-              TextFormField(
-                controller: _mailCtrl,
-                decoration: inputDecoration('Email', Icons.email_outlined),
-                validator:
-                    (v) =>
-                        v == null || v.trim().isEmpty
-                            ? 'Email obligatoire'
-                            : null,
+              // Email (invisible)
+              Visibility(
+                visible: false,
+                maintainState: true, // conserve la valeur dans _mailCtrl
+                maintainAnimation: true,
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _mailCtrl,
+
+                      keyboardType: TextInputType.emailAddress,
+                      autofillHints: const [AutofillHints.email],
+                      validator:
+                          (v) =>
+                              v == null || v.trim().isEmpty
+                                  ? 'Email obligatoire'
+                                  : null,
+                    ),
+                    const SizedBox(height: 18),
+                  ],
+                ),
               ),
+
               const SizedBox(height: 18),
               DropdownButtonFormField<String>(
                 value: _selectedType,

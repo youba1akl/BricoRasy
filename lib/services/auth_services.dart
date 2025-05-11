@@ -57,7 +57,7 @@ class LoggedInUser {
 // --- End of Helper Model ---
 
 class AuthService {
-  static const String baseUrl = "http://192.168.73.44:5000";
+  static const String baseUrl = "http://192.168.43.224:5000";
   static LoggedInUser? currentUser;
   static String? _jwtToken;
 
@@ -78,6 +78,7 @@ class AuthService {
       if (kDebugMode) {
         print(
           "AuthService: User set - ID: ${currentUser!.id}, Name: ${currentUser!.fullname}",
+       
         );
       }
     } catch (e) {
