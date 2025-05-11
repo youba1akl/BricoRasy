@@ -5,15 +5,17 @@ import 'package:bricorasy/screens/profil_page/contact_developer_screen.dart';
 import 'package:bricorasy/screens/artisan/artisan-profil-screen.dart';
 import 'package:bricorasy/services/auth_services.dart';
 import 'package:bricorasy/models/artisan.model.dart';
+import 'package:bricorasy/services/artisan_services.dart'; // Ensure this is imported for api_artisan.fetchMyArtisanProfile
 import 'package:bricorasy/screens/sign_page/welcome-screen.dart'; // For logout navigation
+import 'package:bricorasy/screens/add_post_screen.dart'; // <-- IMPORT AddPostScreen
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart'; // For kDebugMode
 
 class Profilscreen extends StatefulWidget {
-  final String? username; // For potentially showing a different user's profile (not primary use from nav bar)
-  final String? job;      // For potentially showing a different user's profile
-  final Image? img;      // For potentially showing a different user's profile
+  final String? username;
+  final String? job;
+  final ImageProvider? img; // Changed to ImageProvider
 
   const Profilscreen({
     super.key,
@@ -30,13 +32,13 @@ class _ProfilscreenState extends State<Profilscreen> {
   bool _isLoadingMyArtisanProfile = false;
 
   Future<void> _handleAccountTap() async {
-    if (AuthService.currentUser == null) {
+    final currentUser = AuthService.currentUser;
+    if (currentUser == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Veuillez vous connecter d'abord.")),
         );
       }
-      // TODO: Consider navigating to login screen if not automatically handled by app structure
       return;
     }
 
@@ -45,92 +47,83 @@ class _ProfilscreenState extends State<Profilscreen> {
       _isLoadingMyArtisanProfile = true;
     });
 
-    if (AuthService.currentUser!.isArtisan) {
-      Artisan myArtisanProfile = Artisan(
-        fullname: AuthService.currentUser!.fullname,
-        job: AuthService.currentUser!.job ?? "Artisan",
-        localisation: AuthService.currentUser!.localisation ?? "Localisation non spécifiée",
-        numTel: AuthService.currentUser!.phone,
-        rating: "N/A", // Placeholder - This data would come from aggregated reviews/ratings system
-        image: AuthService.currentUser!.profilePicture ?? '', // Use profilePicture or empty string
-        like: "0", // Placeholder - This data would come from an interaction system
-      );
+    Artisan? myArtisanProfile = await api_artisan.fetchMyArtisanProfile();
 
-      if (mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => Artisanprofilscreen(
-              artisan: myArtisanProfile,
-              isMyProfile: true,
-            ),
+    if (!mounted) {
+       _isLoadingMyArtisanProfile = false;
+      return;
+    }
+
+    if (myArtisanProfile != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => Artisanprofilscreen(
+            artisan: myArtisanProfile,
+            isMyProfile: true,
           ),
-        );
-      }
+        ),
+      );
     } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Paramètres de compte généraux (À implémenter).")),
-        );
-        // TODO: Navigate to a general user settings screen for non-artisans
-        // Example: Navigator.push(context, MaterialPageRoute(builder: (context) => GeneralUserSettingsScreen()));
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Paramètres de compte généraux (À implémenter). Vous n'êtes pas un artisan.")),
+      );
+      // TODO: Navigate to a general user settings screen
     }
 
-    if (mounted) {
-      setState(() {
-        _isLoadingMyArtisanProfile = false;
-      });
-    }
+    setState(() {
+      _isLoadingMyArtisanProfile = false;
+    });
   }
 
   Future<void> _handleLogout() async {
     if (kDebugMode) {
-      print("Profilscreen: Logout tapped");
+      print("Profilscreen: Logout tapped by ${AuthService.currentUser?.fullname ?? 'Guest'}");
     }
-    await AuthService.logoutUser(context); // AuthService handles navigation
+    await AuthService.logoutUser(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    // Determine display data: prioritize logged-in user, then widget props, then defaults
     final String displayUsername;
-    final String displayJob;
+    final String displayJobInfo;
     final ImageProvider displayImage;
+    final bool isUserCurrentlyArtisan = AuthService.isUserArtisan;
 
     if (AuthService.currentUser != null) {
-      displayUsername = AuthService.currentUser!.fullname;
-      displayJob = (AuthService.currentUser!.isArtisan)
-          ? (AuthService.currentUser!.job ?? "Artisan")
-          : "Client"; // Or an empty string if you prefer not to show "Client"
+      final currentUser = AuthService.currentUser!;
+      displayUsername = currentUser.fullname;
+      displayJobInfo = isUserCurrentlyArtisan
+          ? (currentUser.job?.isNotEmpty == true ? currentUser.job! : "Artisan")
+          : "Client";
 
-      if (AuthService.currentUser!.profilePicture != null &&
-          AuthService.currentUser!.profilePicture!.isNotEmpty) {
-        if (AuthService.currentUser!.profilePicture!.startsWith('http')) {
-          displayImage = NetworkImage(AuthService.currentUser!.profilePicture!);
+      if (currentUser.profilePicture != null &&
+          currentUser.profilePicture!.isNotEmpty) {
+        if (currentUser.profilePicture!.startsWith('http')) {
+          displayImage = NetworkImage(currentUser.profilePicture!);
         } else {
-          // Assuming it's a full asset path or just a filename needing prefix
           displayImage = AssetImage(
-              AuthService.currentUser!.profilePicture!.startsWith('assets/')
-                  ? AuthService.currentUser!.profilePicture!
-                  : 'assets/images/${AuthService.currentUser!.profilePicture!}'
+              currentUser.profilePicture!.startsWith('assets/')
+                  ? currentUser.profilePicture!
+                  : 'assets/images/${currentUser.profilePicture!}'
           );
         }
       } else {
         displayImage = const AssetImage('assets/images/defaultprofil.png');
       }
     } else {
-      // Fallback if no user is logged in (e.g., if this screen could be accessed before login, though unlikely for profile tab)
       displayUsername = widget.username ?? "Utilisateur";
-      displayJob = widget.job ?? "Rôle non spécifié";
-      displayImage = widget.img?.image ?? const AssetImage('assets/images/defaultprofil.png');
+      displayJobInfo = widget.job ?? "Non connecté";
+      displayImage = widget.img ?? const AssetImage('assets/images/defaultprofil.png');
     }
+
+    final colorScheme = Theme.of(context).colorScheme;
 
     return SafeArea(
       child: Scaffold(
         body: Stack(
           children: [
-            Positioned( // Top Profile Info Section
+            Positioned(
               top: 0,
               right: 0,
               left: 0,
@@ -140,8 +133,8 @@ class _ProfilscreenState extends State<Profilscreen> {
                 padding: const EdgeInsets.only(top: 20, bottom: 15),
                 decoration: BoxDecoration(
                   color: Theme.of(context).brightness == Brightness.light
-                      ? Theme.of(context).colorScheme.surfaceContainerLow
-                      : Theme.of(context).colorScheme.surfaceContainer,
+                      ? colorScheme.surfaceContainerLow
+                      : colorScheme.surfaceContainer,
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -151,7 +144,7 @@ class _ProfilscreenState extends State<Profilscreen> {
                       height: 90,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Theme.of(context).colorScheme.surfaceVariant,
+                        color: colorScheme.surfaceVariant,
                         image: DecorationImage(
                           image: displayImage,
                           fit: BoxFit.cover,
@@ -166,33 +159,39 @@ class _ProfilscreenState extends State<Profilscreen> {
                       displayUsername,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurface
                           ),
                       textAlign: TextAlign.center,
                     ),
-                    if (displayJob.isNotEmpty && displayJob != "Client" && displayJob != "Rôle non spécifié")
+                    if (displayJobInfo.isNotEmpty && displayJobInfo != "Client" && displayJobInfo != "Non connecté" && displayJobInfo != "Rôle non spécifié")
                       Padding(
                         padding: const EdgeInsets.only(top: 4.0),
                         child: Text(
-                          displayJob,
+                          displayJobInfo,
                           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                color: colorScheme.onSurfaceVariant,
                               ),
                           textAlign: TextAlign.center,
                         ),
                       ),
                     const SizedBox(height: 18),
-                    if (AuthService.isUserArtisan) // Use the getter from AuthService
+                    if (isUserCurrentlyArtisan)
                       GestureDetector(
                         onTap: () {
-                          print("Creer un Poste tapped by artisan: ${AuthService.currentUser?.fullname}");
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Fonctionnalité 'Créer un Poste' à implémenter.")),
-                          );
+                           if (kDebugMode) print("Creer un Poste tapped by artisan: $displayUsername");
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const AddPostScreen()),
+                          ).then((value) {
+                            if (value == true && mounted) {
+                              if (kDebugMode) print("Profilscreen: Returned from AddPostScreen with success, consider refreshing posts.");
+                            }
+                          });
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary,
+                            color: colorScheme.primary,
                             borderRadius: BorderRadius.circular(25),
                           ),
                           child: Row(
@@ -201,11 +200,11 @@ class _ProfilscreenState extends State<Profilscreen> {
                               Text(
                                 'Créer un Poste',
                                 style: TextStyle(
-                                    color: Theme.of(context).colorScheme.onPrimary,
+                                    color: colorScheme.onPrimary,
                                     fontWeight: FontWeight.w500),
                               ),
                               const SizedBox(width: 8),
-                              Icon(Icons.add_circle_outline, color: Theme.of(context).colorScheme.onPrimary, size: 20),
+                              Icon(Icons.add_circle_outline, color: colorScheme.onPrimary, size: 20),
                             ],
                           ),
                         ),
@@ -214,14 +213,14 @@ class _ProfilscreenState extends State<Profilscreen> {
                 ),
               ),
             ),
-            Positioned( // Settings List Section
-              top: 245, // Adjust if top section height changes
+            Positioned(
+              top: 245,
               left: 0,
               right: 0,
               bottom: 0,
               child: Container(
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
+                  color: colorScheme.surface,
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(25),
                     topRight: Radius.circular(25),
@@ -241,7 +240,6 @@ class _ProfilscreenState extends State<Profilscreen> {
                     _buildSettingsItem(Icons.palette_outlined, 'Préférences', () {
                       Navigator.push(context, MaterialPageRoute(builder: (context) => const PreferencesScreen()));
                     }),
-                    // "Mon Compte" item with loading state
                     Material(
                       color: Colors.transparent,
                       child: InkWell(
@@ -251,7 +249,7 @@ class _ProfilscreenState extends State<Profilscreen> {
                           margin: const EdgeInsets.symmetric(vertical: 5),
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surfaceContainerLowest,
+                            color: colorScheme.surfaceContainerLowest,
                             borderRadius: const BorderRadius.all(Radius.circular(12)),
                           ),
                           child: Row(
@@ -262,10 +260,10 @@ class _ProfilscreenState extends State<Profilscreen> {
                                       height: 24,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2.0,
-                                        valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
+                                        valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
                                       ),
                                     )
-                                  : Icon(Icons.account_circle_outlined, color: Theme.of(context).colorScheme.primary, size: 24),
+                                  : Icon(Icons.account_circle_outlined, color: colorScheme.primary, size: 24),
                               const SizedBox(width: 16),
                               Expanded(
                                 child: Text(
@@ -275,7 +273,7 @@ class _ProfilscreenState extends State<Profilscreen> {
                               ),
                               Icon(
                                 Icons.arrow_forward_ios,
-                                color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.6),
+                                color: colorScheme.onSurfaceVariant.withOpacity(0.6),
                                 size: 18,
                               ),
                             ],
@@ -373,9 +371,7 @@ class _ProfilscreenState extends State<Profilscreen> {
           backgroundColor: Theme.of(context).colorScheme.error,
           padding: const EdgeInsets.symmetric(vertical: 14),
           minimumSize: const Size(double.infinity, 50),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           elevation: 2,
         ),
         onPressed: onTap,

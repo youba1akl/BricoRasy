@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:bricorasy/models/professional_service.dart'; // Adjust path if needed
 
 // Ensure this constant is defined, perhaps in a shared config file
-const String API_BASE_URL = "http://10.0.2.2:5000";
+const String API_BASE_URL = "http://127.0.0.1:5000";
 
 class ProfessionalApiService {
   Future<ProfessionalService> fetchProfessionalServiceById(String serviceId) async {

@@ -7,7 +7,7 @@ import 'package:bricorasy/models/bricole_service.dart';
 import 'package:bricorasy/models/professional_service.dart';
 import 'package:bricorasy/models/dummy_tool.dart'; // or your Outil model
 
-const String _baseUrl = 'http://10.0.2.2:5000/api/annonce';
+const String _baseUrl = 'http://127.0.0.1:5000/api/annonce';
 
 class AnnonceService {
   static Future<List<BricoleService>> fetchBricole() async {

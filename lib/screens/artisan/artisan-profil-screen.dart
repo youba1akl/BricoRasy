@@ -1,31 +1,24 @@
 // lib/screens/artisan/artisan-profil-screen.dart
-import 'package:bricorasy/models/artisan.model.dart'; // Your Artisan model
+import 'package:bricorasy/models/artisan.model.dart';
+import 'package:bricorasy/models/post.model.dart'; // For Post model
+import 'package:bricorasy/services/post_service.dart'; // For PostService
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart'; // For call functionality
+import 'package:url_launcher/url_launcher.dart';
 
-// Assuming these are custom widgets you've defined elsewhere for posts and tarifs
-// Adjust paths if these widgets are in a different location
 import '../../widgets/poste_custom.dart';
 import '../../widgets/tarif_custom.dart';
 
-// TODO: Import your chat screen if you implement messaging
-// import 'package:bricorasy/screens/personnel_page/chat_screen.dart';
-// TODO: Import your service/provider for fetching posts and reviews for this artisan
-// import 'package:bricorasy/services/post_service.dart'; // Assuming you'll create this
-// import 'package:bricorasy/services/review_service.dart'; // Assuming you'll create this
-// TODO: Import AuthService if needed for chat initiation or other user-specific actions
-// import 'package:bricorasy/services/auth_service.dart';
-
-enum ProfileView { postes, avis } // For toggling content
+enum ProfileView { postes, avis }
 
 class Artisanprofilscreen extends StatefulWidget {
-  final Artisan artisan;       // Expect an Artisan object
-  final bool isMyProfile;    // Flag to indicate if it's the logged-in user's profile
+  final Artisan artisan;
+  final bool isMyProfile;
 
   const Artisanprofilscreen({
     super.key,
-    required this.artisan,    // Artisan object is now required
-    this.isMyProfile = false, // Default to false (viewing someone else)
+    required this.artisan,
+    this.isMyProfile = false,
   });
 
   @override
@@ -33,56 +26,50 @@ class Artisanprofilscreen extends StatefulWidget {
 }
 
 class _ArtisanprofilscreenState extends State<Artisanprofilscreen> {
-  ProfileView _currentView = ProfileView.postes; // Default view for content area
+  ProfileView _currentView = ProfileView.postes;
 
-  // TODO: Add state variables for posts and reviews if fetched dynamically
-  // List<YourPostModel> _artisanPosts = [];
+  List<Post> _artisanPosts = [];
+  bool _isLoadingPosts = true;
   // List<YourReviewModel> _artisanReviews = [];
-  // bool _isLoadingPosts = false; // Set to true in initState if fetching
-  // bool _isLoadingReviews = false; // Set to true in initState if fetching
+  // bool _isLoadingReviews = true;
 
   @override
   void initState() {
     super.initState();
-    // TODO: Fetch posts and reviews for widget.artisan (e.g., using widget.artisan.id if it exists)
-    // _fetchArtisanPosts();
+    if (kDebugMode) {
+      print("ArtisanProfileScreen initState for: ${widget.artisan.fullname}, isMyProfile: ${widget.isMyProfile}");
+      print("Artisan image path from model: ${widget.artisan.image}");
+      print("Artisan ID for fetching posts: ${widget.artisan.id}");
+    }
+    _fetchArtisanPosts();
     // _fetchArtisanReviews();
-    print("ArtisanProfileScreen initState for: ${widget.artisan.fullname}, isMyProfile: ${widget.isMyProfile}");
-    print("Artisan image path from model: ${widget.artisan.image}");
   }
 
-  // --- Placeholder fetch methods (implement with actual service calls) ---
-  // Future<void> _fetchArtisanPosts() async {
-  //   if (!mounted) return;
-  //   setState(() => _isLoadingPosts = true);
-  //   try {
-  //     // Example: _artisanPosts = await PostService.fetchPostsByArtisanId(widget.artisan.id);
-  //     await Future.delayed(const Duration(seconds: 1)); // Simulate network delay
-  //     // _artisanPosts = [dummyPost1, dummyPost2]; // Populate with dummy posts
-  //     print("Fetched posts (placeholder)");
-  //   } catch (e) {
-  //     print("Error fetching posts: $e");
-  //     // Handle error (e.g., show a message)
-  //   }
-  //   if (mounted) setState(() => _isLoadingPosts = false);
-  // }
+  Future<void> _fetchArtisanPosts() async {
+    if (widget.artisan.id == null || widget.artisan.id!.isEmpty) {
+      if (kDebugMode) print("Artisan ID is null or empty. Cannot fetch posts.");
+      if (mounted) setState(() => _isLoadingPosts = false);
+      return;
+    }
 
-  // Future<void> _fetchArtisanReviews() async {
-  //   if (!mounted) return;
-  //   setState(() => _isLoadingReviews = true);
-  //   try {
-  //     // Example: _artisanReviews = await ReviewService.fetchReviewsForArtisan(widget.artisan.id);
-  //     await Future.delayed(const Duration(seconds: 1));
-  //     // _artisanReviews = [dummyReview1, dummyReview2]; // Populate with dummy reviews
-  //     print("Fetched reviews (placeholder)");
-  //   } catch (e) {
-  //     print("Error fetching reviews: $e");
-  //   }
-  //   if (mounted) setState(() => _isLoadingReviews = false);
-  // }
+    if (!mounted) return;
+    setState(() => _isLoadingPosts = true);
+    try {
+      _artisanPosts = await PostService.fetchPostsByArtisanId(widget.artisan.id!);
+      if (kDebugMode) print("Fetched ${_artisanPosts.length} posts for artisan ${widget.artisan.fullname}");
+    } catch (e) {
+      if (kDebugMode) print("Error fetching posts for artisan ${widget.artisan.id}: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Erreur de chargement des postes: ${e.toString()}")),
+        );
+      }
+    }
+    if (mounted) {
+      setState(() => _isLoadingPosts = false);
+    }
+  }
 
-
-  // --- Helper Widget for Stat Items ---
   Widget _buildStatItem(BuildContext context, IconData icon, String value, {String? label}) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
@@ -95,7 +82,7 @@ class _ArtisanprofilscreenState extends State<Artisanprofilscreen> {
           Icon(icon, size: 24, color: colorScheme.onSurfaceVariant),
           const SizedBox(height: 4),
           Text(
-            value.isNotEmpty ? value : "N/A", // Handle empty values
+            value.isNotEmpty ? value : "N/A",
             style: textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: colorScheme.onSurface,
@@ -113,7 +100,6 @@ class _ArtisanprofilscreenState extends State<Artisanprofilscreen> {
     );
   }
 
-  // --- Action Handlers ---
   Future<void> _handleCall() async {
     if (widget.artisan.numTel.isEmpty) {
       if(mounted) {
@@ -136,12 +122,12 @@ class _ArtisanprofilscreenState extends State<Artisanprofilscreen> {
           SnackBar(content: Text("Impossible de passer l'appel au ${widget.artisan.numTel}")),
         );
       }
-      print('Could not launch $launchUri: $e');
+      if (kDebugMode) print('Could not launch $launchUri: $e');
     }
   }
 
   void _handleMessage() {
-    print("Message action triggered for ${widget.artisan.fullname}");
+    if (kDebugMode) print("Message action triggered for ${widget.artisan.fullname}");
      if(mounted) {
        ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Messagerie à implémenter.")),
@@ -161,14 +147,18 @@ class _ArtisanprofilscreenState extends State<Artisanprofilscreen> {
           padding: const EdgeInsets.only(bottom: 8.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            children: [ /* Your ListTiles for more options */ ],
+            children: [
+              ListTile(leading: const Icon(Icons.bookmark_border_outlined), title: const Text('Enregistrer'), onTap: () { Navigator.pop(context); /* TODO */ }),
+              ListTile(leading: const Icon(Icons.rate_review_outlined), title: const Text('Laisser un Avis'), onTap: () { Navigator.pop(context); /* TODO */ }),
+              ListTile(leading: const Icon(Icons.share_outlined), title: const Text('Partager le profil'), onTap: () { Navigator.pop(context); /* TODO */ }),
+              ListTile(leading: Icon(Icons.flag_outlined, color: Theme.of(context).colorScheme.error), title: Text('Signaler', style: TextStyle(color: Theme.of(context).colorScheme.error)), onTap: () { Navigator.pop(context); /* TODO */ }),
+            ],
           ),
         ),
       ),
     );
   }
 
-  // --- Build Method ---
   @override
   Widget build(BuildContext context) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
@@ -181,9 +171,8 @@ class _ArtisanprofilscreenState extends State<Artisanprofilscreen> {
       } else if (widget.artisan.image.startsWith('assets/')) {
         displayImageProvider = AssetImage(widget.artisan.image);
       } else {
-        // Fallback for just filename, assuming it's in 'assets/images/'
         displayImageProvider = AssetImage('assets/images/${widget.artisan.image}');
-        print("Artisan image '${widget.artisan.image}' not a URL or full asset path, attempting 'assets/images/${widget.artisan.image}'");
+        if (kDebugMode) print("Artisan image '${widget.artisan.image}' not a URL or full asset path, attempting 'assets/images/${widget.artisan.image}'. Ensure this asset exists.");
       }
     } else {
       displayImageProvider = const AssetImage('assets/images/defaultprofil.png');
@@ -204,7 +193,7 @@ class _ArtisanprofilscreenState extends State<Artisanprofilscreen> {
             IconButton(
               icon: Icon(Icons.edit_outlined, color: colorScheme.onSurface),
               onPressed: () {
-                print("Edit my artisan profile: ${widget.artisan.fullname}");
+                if (kDebugMode) print("Edit my artisan profile: ${widget.artisan.fullname}");
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text("Édition du profil artisan à implémenter.")),
                 );
@@ -232,7 +221,7 @@ class _ArtisanprofilscreenState extends State<Artisanprofilscreen> {
                     backgroundColor: colorScheme.surfaceVariant,
                     backgroundImage: displayImageProvider,
                     onBackgroundImageError: (exception, stackTrace) {
-                       print("Error loading profile image for ${widget.artisan.fullname}: $exception");
+                       if (kDebugMode) print("Error loading profile image for ${widget.artisan.fullname}: $exception");
                     },
                   ),
                   const SizedBox(height: 16),
@@ -318,9 +307,6 @@ class _ArtisanprofilscreenState extends State<Artisanprofilscreen> {
                  children: [
                     Text("Catalogue / Tarifs Indicatifs", style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600, color: colorScheme.onSurface)),
                     const SizedBox(height: 12),
-                    // Using Column for TarifCustom as they are not meant to be horizontally flexible here.
-                    // If TarifCustom has Flexible/Expanded, it needs to be a direct child of Row/Column that provides flex.
-                    // Wrap with Column if they should stack.
                     Column(
                       children: [
                         TarifCustom(title: 'Service Exemple 1', prix: '1000 DA - 2000 DA'),
@@ -354,8 +340,8 @@ class _ArtisanprofilscreenState extends State<Artisanprofilscreen> {
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
                       child: _currentView == ProfileView.postes
-                          ? _buildPostesView(context, textTheme, colorScheme)
-                          : _buildAvisView(context, textTheme, colorScheme),
+                          ? _buildPostesView(context, textTheme, colorScheme) // Pass context and theme data
+                          : _buildAvisView(context, textTheme, colorScheme),   // Pass context and theme data
                     ),
                  ],
               ),
@@ -367,26 +353,47 @@ class _ArtisanprofilscreenState extends State<Artisanprofilscreen> {
   }
 
   Widget _buildPostesView(BuildContext context, TextTheme textTheme, ColorScheme colorScheme) {
-    // TODO: Replace with dynamic data and ListView.builder if _isLoadingPosts is false and _artisanPosts is not empty.
-    // if (_isLoadingPosts) return Center(key: const ValueKey('postes_loading'), child: CircularProgressIndicator());
-    // if (_artisanPosts.isEmpty) return Center(key: const ValueKey('postes_empty'), child: Text("Aucun poste publié pour le moment."));
+    if (_isLoadingPosts) {
+      return Center(key: const ValueKey('postes_loading'), child: CircularProgressIndicator(color: colorScheme.primary));
+    }
+    if (_artisanPosts.isEmpty) {
+      return Center(key: const ValueKey('postes_empty'), child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Text("Aucun poste publié pour le moment.", style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurfaceVariant)),
+      ));
+    }
+
     return Column(
       key: const ValueKey('postes_content'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Postes de ${widget.artisan.fullname}", style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface)),
-        const SizedBox(height: 10),
-        PosteCustom(img: Image.asset('assets/images/E02.png'), aime: '30', comment: '23'),
-        const SizedBox(height: 12),
-        PosteCustom(aime: '45', comment: '10'), // Example without image
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12.0),
+          child: Text(
+            widget.isMyProfile ? "Mes Postes" : "Postes de ${widget.artisan.fullname}",
+            style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface, fontWeight: FontWeight.w600),
+          ),
+        ),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: _artisanPosts.length,
+          itemBuilder: (context, index) {
+            final post = _artisanPosts[index]; // post is a Post object here
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16.0),
+              child: PosteCustom( // <-- CORRECTED USAGE
+                post: post,      // Pass the entire 'post' object
+              ),
+            );
+          },
+        ),
       ],
     );
   }
 
   Widget _buildAvisView(BuildContext context, TextTheme textTheme, ColorScheme colorScheme) {
-    // TODO: Replace with dynamic data and ListView.builder.
-    // if (_isLoadingReviews) return Center(key: const ValueKey('avis_loading'), child: CircularProgressIndicator());
-    // if (_artisanReviews.isEmpty) return Center(key: const ValueKey('avis_empty'), child: Text("Aucun avis pour le moment."));
+    // ... (Placeholder, same as your provided code)
     return Column(
       key: const ValueKey('avis_content'),
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -401,6 +408,7 @@ class _ArtisanprofilscreenState extends State<Artisanprofilscreen> {
   }
 
   Widget _buildReviewItem(BuildContext context, String userName, String reviewText, int rating) {
+    // ... (Placeholder, same as your provided code)
     final colorScheme = Theme.of(context).colorScheme;
     return ListTile(
       leading: CircleAvatar(
@@ -415,7 +423,7 @@ class _ArtisanprofilscreenState extends State<Artisanprofilscreen> {
             mainAxisSize: MainAxisSize.min,
             children: List.generate(5, (index) => Icon(
               index < rating ? Icons.star_rounded : Icons.star_border_rounded,
-              color: Colors.amber, // Or colorScheme.tertiary
+              color: Colors.amber,
               size: 18,
             )),
           )
