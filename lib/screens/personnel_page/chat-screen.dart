@@ -102,54 +102,53 @@ class _ChatscreenState extends State<Chatscreen> {
     }
   }
 
- void sendMessage() async {
-  final text = _controller.text.trim();
-  if (text.isEmpty) return;
+  void sendMessage() async {
+    final text = _controller.text.trim();
+    if (text.isEmpty) return;
 
-  try {
-    // 1) Envoi en HTTP pour créer le message en base
-    final resp = await http.post(
-      Uri.parse('$API_BASE_URL/api/messages'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ${AuthService.token}',
-      },
-      body: jsonEncode({
-        'annonceId': widget.annonceId,
-        'to': widget.peerId,
-        'content': text,
-      }),
-    );
-
-    if (resp.statusCode != 201) {
-      // erreur côté serveur
-      final error = jsonDecode(resp.body)['message'] ?? 'Erreur inattendue';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Échec enregistrement : $error')),
+    try {
+      // 1) Envoi en HTTP pour créer le message en base
+      final resp = await http.post(
+        Uri.parse('$API_BASE_URL/api/messages'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${AuthService.token}',
+        },
+        body: jsonEncode({
+          'annonceId': widget.annonceId,
+          'to': widget.peerId,
+          'content': text,
+        }),
       );
-      return;
+
+      if (resp.statusCode != 201) {
+        // erreur côté serveur
+        final error = jsonDecode(resp.body)['message'] ?? 'Erreur inattendue';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Échec enregistrement : $error')),
+        );
+        return;
+      }
+
+      // 2) Si tout est OK, on affiche localement
+      setState(() {
+        messages.add({'text': text, 'isMe': true});
+        _controller.clear();
+      });
+
+      // 3) On émet toujours l’événement socket pour prévenir l’autre client
+      socket.emit('sendMessage', {
+        'annonceId': widget.annonceId,
+        'toUserId': widget.peerId,
+        'content': text,
+      });
+    } catch (e) {
+      // erreur réseau / JSON mal formé
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Erreur réseau : $e')));
     }
-
-    // 2) Si tout est OK, on affiche localement
-    setState(() {
-      messages.add({'text': text, 'isMe': true});
-      _controller.clear();
-    });
-
-    // 3) On émet toujours l’événement socket pour prévenir l’autre client
-    socket.emit('sendMessage', {
-      'annonceId': widget.annonceId,
-      'toUserId': widget.peerId,
-      'content': text,
-    });
-
-  } catch (e) {
-    // erreur réseau / JSON mal formé
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Erreur réseau : $e')),
-    );
   }
-}
 
   @override
   void dispose() {

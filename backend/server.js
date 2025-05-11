@@ -15,6 +15,7 @@ const reportRoute    = require("./routes/reportRoute");
 const annonceRoute   = require("./routes/addanoo_route");
 const outilRoute     = require('./routes/addanno_outil_route');
 const proRoute       = require('./routes/add_anno_profRoute');
+const reviewRoute       = require('./routes/reviewRoute');
 
 const { authorizeSocket } = require("./middleware/socketAuth"); // ← ajouté
 
@@ -45,6 +46,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/annonce", annonceRoute);
 app.use("/api/annonce", outilRoute);
 app.use("/api/annonce", proRoute);
++app.use("/api/reviews", require("./routes/reviewRoute"));
 app.use('/api/messages', require('./routes/messageRoute'));
 // ====== SOCKET.IO ======
 

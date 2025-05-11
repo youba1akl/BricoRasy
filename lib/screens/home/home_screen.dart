@@ -123,7 +123,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   String _getBricoleField(BricoleService svc, String field) {
     switch (field) {
-      case 'location':
+      case 'localisation':
         return svc.localisation;
       case 'prix':
         return svc.prix.toString();
@@ -135,7 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   String _getProField(ProfessionalService svc, String field) {
     switch (field) {
-      case 'location':
+      case 'localisation':
         return svc.localisation;
       case 'prix':
         return svc.prix.toString();
@@ -147,7 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   String _getToolField(DummyTool tool, String field) {
     switch (field) {
-      case 'location':
+      case 'localisation':
         return tool.localisation;
       case 'prix':
         return tool.price.toString();
@@ -194,48 +194,6 @@ class _HomeScreenState extends State<HomeScreen> {
         : const SizedBox.shrink();
   }
 
-  void _onServiceTapped(BricoleService svc) {}
-  void _onProServiceTapped(ProfessionalService svc) {}
-  void _onToolTapped(DummyTool tool) {}
-
-  Widget _buildCurrentContent() {
-    switch (_selectedFilter) {
-      case 'Objet':
-        if (_loadingTools) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (_filteredTools.isEmpty) {
-          return const Center(child: Text('Aucun outil trouvé'));
-        }
-        return ToolGridView(tools: _filteredTools, onToolTapped: _onToolTapped);
-
-      case 'Professionnel':
-        if (_loadingPro) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (_filteredPro.isEmpty) {
-          return const Center(child: Text('Aucune annonce trouvée'));
-        }
-        return ProserviceListView(
-          services: _filteredPro,
-          onServiceTapped: _onProServiceTapped,
-        );
-
-      case 'Bricole':
-      default:
-        if (_loadingBricole) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (_filteredBricole.isEmpty) {
-          return const Center(child: Text('Aucune annonce trouvée'));
-        }
-        return ServiceListView(
-          services: _filteredBricole,
-          onServiceTapped: _onServiceTapped,
-        );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final bg = Theme.of(context).scaffoldBackgroundColor ?? kAppBackgroundColor;
@@ -265,5 +223,43 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildCurrentContent() {
+    switch (_selectedFilter) {
+      case 'Objet':
+        if (_loadingTools) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (_filteredTools.isEmpty) {
+          return const Center(child: Text('Aucun outil trouvé'));
+        }
+        return ToolGridView(tools: _filteredTools, onToolTapped: (t) {});
+
+      case 'Professionnel':
+        if (_loadingPro) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (_filteredPro.isEmpty) {
+          return const Center(child: Text('Aucune annonce trouvée'));
+        }
+        return ProserviceListView(
+          services: _filteredPro,
+          onServiceTapped: (s) {},
+        );
+
+      case 'Bricole':
+      default:
+        if (_loadingBricole) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (_filteredBricole.isEmpty) {
+          return const Center(child: Text('Aucune annonce trouvée'));
+        }
+        return ServiceListView(
+          services: _filteredBricole,
+          onServiceTapped: (s) {},
+        );
+    }
   }
 }

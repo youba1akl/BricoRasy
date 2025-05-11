@@ -57,7 +57,7 @@ class LoggedInUser {
 // --- End of Helper Model ---
 
 class AuthService {
-  static const String baseUrl = "http://192.168.1.3:5000";
+  static const String baseUrl = "http://192.168.73.44:5000";
   static LoggedInUser? currentUser;
   static String? _jwtToken;
 
