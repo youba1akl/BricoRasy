@@ -103,3 +103,16 @@ exports.deactivateAnnonceOutil = async (req, res) => {
   await annonce.save();
   res.json({ message: "Annonce désactivée" });
 };
+
+exports.getMyAnnonceOutil = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const annonces = await outilModel
+      .find({ creator: userId })
+      .sort({ date_creation: -1 });
+    res.json(annonces);
+  } catch (err) {
+    console.error('Erreur récupération mes annonces outil :', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+};

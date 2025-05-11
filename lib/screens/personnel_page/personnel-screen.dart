@@ -9,7 +9,7 @@ import 'package:bricorasy/models/conversation.dart';
 import 'package:bricorasy/screens/personnel_page/chat-screen.dart';
 import 'package:bricorasy/widgets/message_custom.dart';
 import 'package:bricorasy/widgets/poste_custom.dart';
-import 'package:bricorasy/widgets/custom_container_ann.dart';
+import 'package:bricorasy/screens/personnel_page/annonce_list_screen.dart'; // ← import our dynamic annonces screen
 
 const String API_BASE_URL = "http://10.0.2.2:5000";
 
@@ -188,14 +188,8 @@ class _PersonnelScreenState extends State<PersonnelScreen> {
         );
 
       case ActivityView.annonces:
-        return ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          children: const [
-            CustomContainerAnn(title: 'Bricolage urgent', description: ''),
-            SizedBox(height: 12),
-            CustomContainerAnn(title: 'Jardinier recherché', description: ''),
-          ],
-        );
+        // instead of static, navigate to our real annonces list
+        return AnnonceListScreen();
     }
   }
 }

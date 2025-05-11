@@ -128,3 +128,18 @@ exports.deactivateAnnonceBricole = async (req, res) => {
   await annonce.save();
   res.json({ message: "Annonce désactivée" });
 };
+
+
+
+exports.getMyAnnonceProf = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const annonces = await Annonce
+      .find({ creator: userId })
+      .sort({ date_creation: -1 });
+    res.json(annonces);
+  } catch (err) {
+    console.error('Erreur récupération mes annonces pro :', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+};
