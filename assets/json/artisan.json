@@ -1,0 +1,47 @@
+[
+  {
+    "fullname": "Aklil Youba",
+    "job": "Web developper",
+    "adress": "Bejaia",
+    "numTel": "0676646946",
+    "rating": "4.6",
+    "image": "assets/images/profil.png",
+    "like": "100"
+  },
+  {
+    "fullname": "Tahar Bensalem",
+    "job": "Electricien",
+    "adress": "Amizour",
+    "numTel": "0655543322",
+    "rating": "4.2",
+    "image": "assets/images/P01.png",
+    "like": "86"
+  },
+  {
+    "fullname": "Amira Bouzid",
+    "job": "Plombière",
+    "adress": "Sidi-Aich",
+    "numTel": "0778899221",
+    "rating": "4.8",
+    "image": "assets/images/P02.png",
+    "like": "120"
+  },
+  {
+    "fullname": "Yacine Haddad",
+    "job": "Menuisier",
+    "adress": "Tichy",
+    "numTel": "0799554411",
+    "rating": "4.3",
+    "image": "assets/images/P04.png",
+    "like": "92"
+  },
+  {
+    "fullname": "Nadia Kerboua",
+    "job": "Peintre en bâtiment",
+    "adress": "Bejaia",
+    "numTel": "0667788990",
+    "rating": "4.7",
+    "image": "assets/images/P03.png",
+    "like": "105"
+  }
+]
