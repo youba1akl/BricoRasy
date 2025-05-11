@@ -26,8 +26,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'BricoRasy',
       themeMode: themeProvider.themeMode,
-      theme: app_theme.lightMode,       // From your theme.dart
-      darkTheme: app_theme.darkMode,    // From your theme.dart
+      theme: app_theme.lightMode, // From your theme.dart
+      darkTheme: app_theme.darkMode, // From your theme.dart
       home: const Welcomescreen(),
     );
   }
