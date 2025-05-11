@@ -1,183 +1,199 @@
-import 'package:flutter/material.dart';
-// Assuming these custom widgets exist and are styled according to the theme
-import '../../widgets/message_custom.dart';
-import '../../widgets/poste_custom.dart';
-// TODO: Import widget for displaying Annonces if different from PosteCustom
+// lib/screens/personnel_page/personnel_screen.dart
 
-// Define enum for view states
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:bricorasy/services/auth_services.dart';
+import 'package:bricorasy/services/socket_service.dart';
+import 'package:bricorasy/models/conversation.dart';
+import 'package:bricorasy/screens/personnel_page/chat-screen.dart';
+import 'package:bricorasy/widgets/message_custom.dart';
+import 'package:bricorasy/widgets/poste_custom.dart';
+import 'package:bricorasy/widgets/custom_container_ann.dart';
+
+const String API_BASE_URL = "http://10.0.2.2:5000";
+
 enum ActivityView { messages, postes, annonces }
 
 class PersonnelScreen extends StatefulWidget {
   const PersonnelScreen({super.key});
-
   @override
   State<PersonnelScreen> createState() => _PersonnelScreenState();
 }
 
 class _PersonnelScreenState extends State<PersonnelScreen> {
-  ActivityView _currentView = ActivityView.messages; // Default view
-  String userRole = 'artisan'; // Change to 'client' or get from auth state
+  ActivityView _currentView = ActivityView.messages;
+  List<Conversation> _conversations = [];
+  bool _loading = true;
 
-  // --- Build Method ---
+  @override
+  void initState() {
+    super.initState();
+    SocketService.init();
+    _fetchConversations();
+    SocketService.socket.on('newMessage', (data) {
+      final idx = _conversations.indexWhere(
+        (c) => c.annonceId == data['annonceId'],
+      );
+      if (idx != -1) {
+        setState(() => _conversations[idx].lastMessage = data['content']);
+      }
+    });
+  }
+
+  Future<void> _fetchConversations() async {
+    setState(() => _loading = true);
+    try {
+      final resp = await http.get(
+        Uri.parse('$API_BASE_URL/api/messages/conversations'),
+        headers: AuthService.authHeader,
+      );
+      if (resp.statusCode == 200) {
+        final List<dynamic> jsonList = jsonDecode(resp.body);
+        setState(() {
+          _conversations =
+              jsonList.map((j) => Conversation.fromJson(j)).toList();
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Erreur ${resp.statusCode} au chargement des conversations',
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erreur réseau: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() => _loading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Get theme colors
-    final Color primaryColor = Theme.of(context).primaryColor;
-    final Color scaffoldBackgroundColor = Theme.of(context).scaffoldBackgroundColor;
-    final Color cardColor = Theme.of(context).cardColor;
-    final Color onPrimaryColor = Theme.of(context).colorScheme.onPrimary;
-    final Color onSurfaceColor = Theme.of(context).colorScheme.onSurface;
+    final cardColor = Theme.of(context).cardColor;
+    final primaryColor = Theme.of(context).primaryColor;
+    final onPrimaryColor = Theme.of(context).colorScheme.onPrimary;
+    final offColor = Theme.of(context).colorScheme.onSurface.withOpacity(0.7);
 
-    // Define segments based on user role
-    final List<ButtonSegment<ActivityView>> segments = [
-      const ButtonSegment<ActivityView>(
-          value: ActivityView.messages,
-          label: Text('Messages'),
-          icon: Icon(Icons.message_outlined)),
-      // Conditionally add Postes segment
-      if (userRole == 'artisan')
-        const ButtonSegment<ActivityView>(
-            value: ActivityView.postes,
-            label: Text('Postes'),
-            icon: Icon(Icons.grid_view_outlined)), // Or Icons.article_outlined
-      const ButtonSegment<ActivityView>(
-          value: ActivityView.annonces,
-          label: Text('Annonces'),
-          icon: Icon(Icons.list_alt_outlined)), // Or Icons.campaign_outlined
+    final segments = [
+      const ButtonSegment(
+        value: ActivityView.messages,
+        label: Text('Messages'),
+        icon: Icon(Icons.message_outlined),
+      ),
+      const ButtonSegment(
+        value: ActivityView.postes,
+        label: Text('Postes'),
+        icon: Icon(Icons.grid_view_outlined),
+      ),
+      const ButtonSegment(
+        value: ActivityView.annonces,
+        label: Text('Annonces'),
+        icon: Icon(Icons.list_alt_outlined),
+      ),
     ];
 
     return Scaffold(
-      backgroundColor: scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Mon Activité'), // Updated title
-        // No leading back button assuming this is a main tab screen
-        automaticallyImplyLeading: false,
-        backgroundColor: Theme.of(context).appBarTheme.backgroundColor ?? cardColor,
-        foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
-        elevation: 1.0,
+        title: const Text('Mon Activité'),
         centerTitle: true,
+        automaticallyImplyLeading: false,
       ),
-      body: Column( // Use Column for layout
+      body: Column(
         children: [
-          // --- Toggle Buttons (SegmentedButton) ---
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: SegmentedButton<ActivityView>(
-              segments: segments, // Use dynamically generated segments
-              selected: <ActivityView>{_currentView},
-              onSelectionChanged: (Set<ActivityView> newSelection) {
-                setState(() {
-                  // Ensure selection doesn't become empty if single select behavior is desired
-                  if (newSelection.isNotEmpty) {
-                     _currentView = newSelection.first;
-                  }
-                });
-              },
-              // Apply consistent styling from previous examples
+              segments: segments,
+              selected: {_currentView},
+              onSelectionChanged:
+                  (newSel) => setState(() => _currentView = newSel.first),
               style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
-                  if (states.contains(WidgetState.selected)) {
-                    return primaryColor.withOpacity(0.85); // Slightly adjusted opacity maybe
-                  }
-                  return cardColor.withOpacity(0.5); // Lighter background for unselected
-                }),
-                foregroundColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
-                  if (states.contains(WidgetState.selected)) {
-                    return onPrimaryColor;
-                  }
-                  return onSurfaceColor.withOpacity(0.7); // Slightly muted unselected text
-                }),
-                shape: WidgetStateProperty.all<OutlinedBorder>(
-                   RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                      side: BorderSide(color: primaryColor.withOpacity(0.3)) // Subtle border
-                   )
+                backgroundColor: MaterialStateProperty.resolveWith(
+                  (states) =>
+                      states.contains(MaterialState.selected)
+                          ? primaryColor.withOpacity(0.85)
+                          : cardColor.withOpacity(0.5),
                 ),
-                // Adjust padding if needed
-                // padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-                //   const EdgeInsets.symmetric(horizontal: 12, vertical: 8)
-                // ),
+                foregroundColor: MaterialStateProperty.resolveWith(
+                  (states) =>
+                      states.contains(MaterialState.selected)
+                          ? onPrimaryColor
+                          : offColor,
+                ),
+                shape: MaterialStateProperty.all(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    side: BorderSide(color: primaryColor.withOpacity(0.3)),
+                  ),
+                ),
               ),
             ),
           ),
-
-          // --- Dynamic Content Area ---
-          Expanded(
-            child: _buildCurrentViewContent(), // Helper method for content
-          ),
+          if (_loading) const LinearProgressIndicator(),
+          Expanded(child: _buildCurrentViewContent()),
         ],
       ),
     );
   }
 
-  // --- Helper to build content based on selected view ---
   Widget _buildCurrentViewContent() {
-    // Add padding around the list content
-    const EdgeInsets listPadding = EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0);
-
     switch (_currentView) {
       case ActivityView.messages:
-        return ListView( // Replace with ListView.builder for dynamic data
-          padding: listPadding,
-          children: const [
-            // TODO: Replace with actual message data & ensure MessageCustom is styled
-            MessageCustom(
-              // img: Image.asset('assets/images/exemple.png'), // Pass ImageProvider if needed
-              username: 'Aklil Youba',
-              lastmssg: 'nouveaux messages',
-            ),
-            SizedBox(height: 10),
-            MessageCustom(
-              username: 'Tahar Bensalem',
-              lastmssg: 'Ok, merci!',
-            ),
-             SizedBox(height: 10),
-             MessageCustom(
-              username: 'Amira Bouzid',
-              lastmssg: 'Vous êtes disponible demain?',
-            ),
-            // Add more messages...
-          ],
+        return ListView.builder(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          itemCount: _conversations.length,
+          itemBuilder: (ctx, i) {
+            final convo = _conversations[i];
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: MessageCustom(
+                username: convo.peerName,
+                lastmssg: convo.lastMessage,
+                onTap: () async {
+                  final updated = await Navigator.push<bool>(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (_) => Chatscreen(
+                            username: convo.peerName,
+                            peerId: convo.peerId,
+                            annonceId: convo.annonceId,
+                          ),
+                    ),
+                  );
+                  if (updated == true) _fetchConversations();
+                },
+              ),
+            );
+          },
         );
 
       case ActivityView.postes:
-        // This case is only reachable if userRole == 'artisan'
-        return ListView( // Replace with ListView.builder for dynamic data
-           padding: listPadding,
+        return ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           children: const [
-            // TODO: Replace with actual post data & ensure PosteCustom is styled
-            PosteCustom(
-              // img: Image.asset('assets/images/E02.png'), // Pass ImageProvider if needed
-              aime: '30',
-              comment: '40',
-            ),
-             SizedBox(height: 12),
-            PosteCustom(
-              // img: Image.asset('assets/images/E03.png'),
-              aime: '55',
-              comment: '12',
-            ),
-            // Add more postes...
+            PosteCustom(aime: '30', comment: '40'),
+            SizedBox(height: 12),
+            PosteCustom(aime: '55', comment: '12'),
           ],
         );
 
       case ActivityView.annonces:
-        return ListView( // Replace with ListView.builder for dynamic data
-           padding: listPadding,
+        return ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           children: const [
-            // TODO: Replace with actual annonce data & use appropriate widget (maybe PosteCustom or a new one)
-            PosteCustom( // Using PosteCustom as placeholder
-              // img: Image.asset('assets/images/E01.png'),
-              aime: '15', // Maybe represent views or saves?
-              comment: 'Bricole', // Maybe represent category?
-            ),
-             SizedBox(height: 12),
-            PosteCustom(
-              // img: Image.asset('assets/images/E04.png'),
-              aime: '42',
-              comment: 'Outil',
-            ),
-            // Add more annonces...
+            CustomContainerAnn(title: 'Bricolage urgent', description: ''),
+            SizedBox(height: 12),
+            CustomContainerAnn(title: 'Jardinier recherché', description: ''),
           ],
         );
     }

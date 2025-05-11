@@ -33,7 +33,7 @@ exports.createAnnonceOutil = async (req, res) => {
       date_creation,
       duree_location,   // matches schema
       phone,
-      mail
+      idc
     } = req.body;
 
     // Validate required fields
@@ -45,7 +45,7 @@ exports.createAnnonceOutil = async (req, res) => {
       !date_creation ||
       !duree_location ||
       !phone ||
-      !mail
+      !idc
     ) {
       return res
         .status(400)
@@ -64,7 +64,7 @@ exports.createAnnonceOutil = async (req, res) => {
       duree_location,   // correct field name
       photo:          filenames,
       phone,
-      mail,
+      idc,
     });
 
     const saved = await newAnnonce.save();

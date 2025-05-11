@@ -50,7 +50,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     final user = AuthService.currentUser;
     if (user != null) {
       _phoneCtrl.text = user.phone;
-      _mailCtrl.text = user.email;
+      _mailCtrl.text = user.id;
     }
   }
 
@@ -135,8 +135,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           ..fields['description'] = _descriptionCtrl.text
           ..fields['date_creation'] = _dateStartCtrl.text
           ..fields['date_expiration'] = _dateEndCtrl.text
-          ..fields['numtel'] = _phoneCtrl.text
-          ..fields['mail'] = _mailCtrl.text
+          ..fields['phone'] = _phoneCtrl.text
+          ..fields['idc'] = _mailCtrl.text
           ..headers.addAll(AuthService.authHeader);
 
     for (var img in _images) {

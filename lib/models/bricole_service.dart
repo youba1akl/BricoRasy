@@ -8,7 +8,7 @@ class BricoleService {
   final String imagePath;
   final String localisation;
   final String phone; // ← new
-  final String mail; // ← new
+  final String idc; // ← new
   final double prix;
   final List<String> categories;
 
@@ -20,7 +20,7 @@ class BricoleService {
     required this.imagePath,
     required this.localisation,
     required this.phone, // ← new
-    required this.mail, // ← new
+    required this.idc, // ← new
     required this.prix,
     required this.categories,
   });
@@ -55,7 +55,7 @@ class BricoleService {
 
       // pull in the two new fields
       phone: json['phone'] as String,
-      mail: json['mail'] as String,
+      idc: json['idc'] as String,
 
       prix: prixValue,
       categories: [json['type_annonce'] as String],

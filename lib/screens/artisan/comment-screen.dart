@@ -131,20 +131,22 @@ class _CommentscreenState extends State<Commentscreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 10),
                   children: [
                     MessageCustom(
-                      img: Image.asset('assets/images/exemple.png'),
+                      onTap: () {},
                       username: 'Aklil Youba',
                       lastmssg: 'nouveaux messages',
                     ),
                     MessageCustom(
+                      onTap: () {},
                       username: 'Aklil Youba',
                       lastmssg: 'nouveaux messages',
                     ),
                     MessageCustom(
-                      img: Image.asset('assets/images/exemple.png'),
+                      onTap: () {},
                       username: 'Aklil Youba',
                       lastmssg: 'nouveaux messages',
                     ),
                     MessageCustom(
+                      onTap: () {},
                       username: 'Aklil Youba',
                       lastmssg: 'nouveaux messages',
                     ),

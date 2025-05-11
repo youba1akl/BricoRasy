@@ -27,7 +27,7 @@ const outilSchema=mongoose.Schema({
     type: Boolean,
     default: true
   },
-  mail: {
+  idc: {
     type: String,
     required: true,
     trim: true,

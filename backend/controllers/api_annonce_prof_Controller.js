@@ -27,7 +27,7 @@ exports.create_annonce_prof = async (req, res) => {
       prix,
       localisation,
       numtel,
-      mail,
+     idc,
       date_creation,
       date_expiration,
       type_annonce
@@ -51,7 +51,7 @@ exports.create_annonce_prof = async (req, res) => {
       type_annonce.length === 0 ||
       !date_expiration ||
       !numtel ||
-      !mail
+      !idc
     ) {
       return res.status(400).json({
         error:
@@ -66,7 +66,7 @@ exports.create_annonce_prof = async (req, res) => {
       prix,
       localisation,
       numtel,         // ← your phone field
-      mail,           // ← your email field
+      idc,           // ← your email field
       date_creation:   new Date(date_creation),
       date_expiration: new Date(date_expiration),
       photo:           filenames,

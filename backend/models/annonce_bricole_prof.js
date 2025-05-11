@@ -22,7 +22,7 @@ const schemaBricoleProf = new mongoose.Schema({
     required: [true, "Le numéro de téléphone est requis"],
     trim: true
   },
-  mail: {
+  idc: {
     type: String,
     required: [true, "L'adresse email est requise"],
     trim: true

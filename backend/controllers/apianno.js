@@ -26,7 +26,7 @@ exports.createAnnonceBricole = async (req, res) => {
       date_creation,
       date_expiration,
       phone,      // NEW
-      mail        // NEW
+      idc        // NEW
     } = req.body;
 
     // validation now includes phone + mail
@@ -36,7 +36,7 @@ exports.createAnnonceBricole = async (req, res) => {
         !type_annonce ||
         !date_expiration ||
         !phone ||    // NEW
-        !mail) {     // NEW
+        !idc) {     // NEW
       return res.status(400).json({ error: "Champs manquants" });
     }
 
@@ -48,7 +48,7 @@ exports.createAnnonceBricole = async (req, res) => {
       creator: req.user._id,
       type_annonce,
       phone,       // NEW
-      mail,        // NEW
+      idc,        // NEW
       date_creation:   new Date(date_creation),
       date_expiration: new Date(date_expiration),
       photo:           filenames,

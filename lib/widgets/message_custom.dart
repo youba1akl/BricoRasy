@@ -1,69 +1,51 @@
-import '../screens/personnel_page/chat-screen.dart';
+// lib/widgets/message_custom.dart
 import 'package:flutter/material.dart';
 
-class MessageCustom extends StatefulWidget {
-  const MessageCustom({super.key, this.username, this.lastmssg, this.img});
-  final String? username;
-  final String? lastmssg;
-  final Image? img;
+class MessageCustom extends StatelessWidget {
+  final String username;
+  final String lastmssg;
+  final VoidCallback onTap;
 
-  @override
-  State<MessageCustom> createState() => _MessageCustomState();
-}
+  const MessageCustom({
+    super.key,
+    required this.username,
+    required this.lastmssg,
+    required this.onTap,
+  });
 
-class _MessageCustomState extends State<MessageCustom> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => Chatscreen(username: 'Aklil Youba'),
-          ),
-        );
-      },
+      onTap: onTap,
       child: Container(
-        padding: EdgeInsets.all(5),
-        height: 50,
-        width: double.infinity,
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Color(0XFFFAFBFA),
+          color: const Color(0XFFFAFBFA),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
           children: [
-            Flexible(
-              flex: 1,
-              child: ClipOval(
-                child:
-                    widget.img ??
-                    Image.asset('assets/images/profil.png', fit: BoxFit.cover),
-              ),
+            const CircleAvatar(
+              backgroundImage: AssetImage(
+                'assets/images/profil.png',
+              ), // avatar par défaut
             ),
             const SizedBox(width: 15),
-            Flexible(
-              flex: 4,
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    widget.username!,
-                    style: TextStyle(
-                      color: Colors.black,
+                    username,
+                    style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
                     ),
-                    overflow: TextOverflow.ellipsis,
                   ),
+                  const SizedBox(height: 4),
                   Text(
-                    widget.lastmssg!,
-                    style: TextStyle(
-                      color: Colors.black87,
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    lastmssg,
+                    style: const TextStyle(fontSize: 13, color: Colors.black54),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],

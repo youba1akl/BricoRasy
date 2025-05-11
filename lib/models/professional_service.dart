@@ -6,7 +6,7 @@ class ProfessionalService {
   final String imagePath;
   final String localisation;
   final String? numtel;
-  final String mail;
+  final String idc;
   final double prix;
   final List<String> categories;
   final String? description;
@@ -19,7 +19,7 @@ class ProfessionalService {
     required this.imagePath,
     required this.localisation,
     required this.numtel,
-    required this.mail,
+    required this.idc,
     required this.prix,
     required this.categories,
     this.description,
@@ -34,7 +34,7 @@ class ProfessionalService {
     final dateExpiration = safeString(json['date_expiration']);
     final localisation = safeString(json['localisation']);
     final numtel = safeString(json['numtel']);
-    final mail = safeString(json['mail']);
+    final idc = safeString(json['idc']);
     final description = safeString(json['description']);
 
     // parse prix
@@ -65,7 +65,7 @@ class ProfessionalService {
       imagePath: imagePath,
       localisation: localisation,
       numtel: numtel.isEmpty ? null : numtel,
-      mail: mail,
+      idc: idc,
       prix: prixValue,
       categories: categories,
       description: description.isEmpty ? null : description,

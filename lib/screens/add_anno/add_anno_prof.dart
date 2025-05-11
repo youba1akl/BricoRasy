@@ -45,7 +45,7 @@ class _AddAnnoProfState extends State<AddAnnoProf> {
     final user = AuthService.currentUser;
     if (user != null) {
       _phoneCtrl.text = user.phone;
-      _mailCtrl.text = user.email;
+      _mailCtrl.text = user.id;
     }
   }
 
@@ -158,7 +158,7 @@ class _AddAnnoProfState extends State<AddAnnoProf> {
       ..fields['description'] = _descriptionController.text
       ..fields['date_creation'] = _dateController.text
       ..fields['date_expiration'] = _dateEndCtrl.text
-      ..fields['mail'] = _mailCtrl.text
+      ..fields['idc'] = _mailCtrl.text
       ..fields['numtel'] = _phoneCtrl.text;
 
     for (var img in _images) {

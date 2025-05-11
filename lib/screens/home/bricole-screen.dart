@@ -1,3 +1,5 @@
+// lib/screens/home/bricole_screen.dart
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -7,6 +9,8 @@ import 'package:intl/intl.dart';
 
 import 'package:bricorasy/models/bricole_service.dart';
 import 'package:bricorasy/services/auth_services.dart';
+import 'package:bricorasy/services/socket_service.dart';
+import 'package:bricorasy/screens/personnel_page/chat-screen.dart';
 
 const String API_BASE_URL = "http://10.0.2.2:5000";
 
@@ -20,209 +24,156 @@ class Bricolescreen extends StatefulWidget {
 }
 
 class _BricolescreenState extends State<Bricolescreen> {
-  // Dialer helper
+  @override
+  void initState() {
+    super.initState();
+    SocketService.init();
+  }
+
   Future<void> _launchDialer(String phone) async {
     final uri = Uri(scheme: 'tel', path: phone);
     if (!await launchUrl(uri)) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Impossible d’appeler : $phone')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Impossible d’appeler : $phone')));
     }
   }
 
-  // ── UPDATED CALL ACTION ─────────────────────────────────────
-  /// Instead of using the annonce creator’s phone,
-  /// we now dial the **logged-in user’s** number
   void _callAction() {
     final phone = widget.service.phone;
     if (phone.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Numéro de téléphone indisponible')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Numéro indisponible')));
       return;
     }
     _launchDialer(phone);
   }
-  // ─────────────────────────────────────────────────────────────
 
-  // Placeholder messaging
+  /// Ouvre la conversation Socket.IO sur cette annonce
   void _messageAction() {
-    // TODO: implement SMS logic
-  }
-
-  // Report sending
-  void sendReport(String message) async {
-    final String annonceId = widget.service.id;
-    const String placeholderUserId = "user_abc";
-    final String reportUrl = "$API_BASE_URL/api/reports";
-
-    try {
-      final response = await http.post(
-        Uri.parse(reportUrl),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "message": message,
-          "annonceId": annonceId,
-          "userId": placeholderUserId,
-        }),
-      );
-
-      if (!mounted) return;
-      if (response.statusCode == 201) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Signalement envoyé avec succès"),
-            backgroundColor: Colors.green,
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Erreur lors de l'envoi (${response.statusCode})"),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Erreur réseau: $e"),
-          backgroundColor: Colors.red,
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => Chatscreen(
+          username: widget.service.name,           // Nom ou titre de l’annonce
+          annonceId: widget.service.id,            // ID de l’annonce
+          peerId: widget.service.idc,       // ID du créateur (à rajouter dans votre modèle)
         ),
-      );
-    }
+      ),
+    );
   }
 
-  // Share
   Future<void> _desactivateAction() async {
     final id = widget.service.id;
     final url = Uri.parse('$API_BASE_URL/api/annonce/bricole/$id');
 
-    try {
-      final resp = await http.patch(
-        url,
-        headers: AuthService.authHeader, // ← attach JWT header
-      );
-      if (!mounted) return;
+    final resp = await http.patch(
+      url,
+      headers: AuthService.authHeader,
+    );
+    if (!mounted) return;
 
-      if (resp.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Annonce désactivée'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        Navigator.of(
-          context,
-        ).pop(true); // return `true` to signal list to refresh
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Erreur lors de la désactivation (${resp.statusCode})',
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } catch (e) {
-      if (!mounted) return;
+    if (resp.statusCode == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Annonce désactivée'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.of(context).pop(true);
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Erreur réseau: $e'),
+          content: Text('Erreur (${resp.statusCode})'),
           backgroundColor: Colors.red,
         ),
       );
     }
   }
 
-  // Show report dialog
+  void sendReport(String message) async {
+    final annonceId = widget.service.id;
+    final url = Uri.parse('$API_BASE_URL/api/reports');
+    final resp = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'message': message,
+        'annonceId': annonceId,
+        'userId': AuthService.currentUserId,
+        'annonceType': 'bricole',
+      }),
+    );
+    if (!mounted) return;
+    final color = resp.statusCode == 201 ? Colors.green : Colors.red;
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(resp.body), backgroundColor: color));
+  }
+
   void _showReportDialog() {
-    TextEditingController messageController = TextEditingController();
+    final ctrl = TextEditingController();
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Signaler cette annonce'),
-            content: TextField(
-              controller: messageController,
-              maxLines: 4,
-              decoration: const InputDecoration(
-                hintText: 'Décrivez le problème...',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Annuler'),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                onPressed: () {
-                  final message = messageController.text.trim();
-                  if (message.isNotEmpty) {
-                    sendReport(message);
-                    Navigator.pop(context);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Veuillez décrire le problème."),
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
-                  }
-                },
-                child: const Text('Envoyer'),
-              ),
-            ],
+      builder: (_) => AlertDialog(
+        title: const Text('Signaler cette annonce'),
+        content: TextField(
+          controller: ctrl,
+          maxLines: 4,
+          decoration: const InputDecoration(
+            hintText: 'Décrivez le problème…',
+            border: OutlineInputBorder(),
           ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () {
+              final msg = ctrl.text.trim();
+              if (msg.isNotEmpty) {
+                sendReport(msg);
+                Navigator.pop(context);
+              }
+            },
+            child: const Text('Envoyer'),
+          ),
+        ],
+      ),
     );
   }
 
-  // More options sheet
   void _showMoreOptions() {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder:
-          (context) => SafeArea(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  leading: const Icon(
-                    Icons.delete_outline,
-                    color: Colors.orange,
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _desactivateAction();
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.flag_outlined, color: Colors.red),
-                  title: const Text(
-                    'Signaler',
-                    style: TextStyle(color: Colors.red),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _showReportDialog();
-                  },
-                ),
-                const SizedBox(height: 10),
-              ],
+      shape:
+          const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.delete_outline, color: Colors.orange),
+              title: const Text('Désactiver'),
+              onTap: () {
+                Navigator.pop(context);
+                _desactivateAction();
+              },
             ),
-          ),
+            ListTile(
+              leading: const Icon(Icons.flag_outlined, color: Colors.red),
+              title: const Text('Signaler', style: TextStyle(color: Colors.red)),
+              onTap: () {
+                Navigator.pop(context);
+                _showReportDialog();
+              },
+            ),
+            const SizedBox(height: 10),
+          ],
+        ),
+      ),
     );
   }
 
-  // Info row builder
-  Widget _buildInfoRow(BuildContext context, IconData icon, String text) {
+  Widget _buildInfoRow(IconData icon, String text) {
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
@@ -230,26 +181,17 @@ class _BricolescreenState extends State<Bricolescreen> {
         children: [
           Icon(icon, size: 20, color: muted),
           const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              text,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: muted, height: 1.4),
-            ),
-          ),
+          Expanded(child: Text(text, style: TextStyle(color: muted, height: 1.4))),
         ],
       ),
     );
   }
 
-  // Date formatter
-  String _formatDate(String dateString) {
+  String _formatDate(String raw) {
     try {
-      final dt = DateTime.parse(dateString);
-      return DateFormat('d MMM yyyy', 'fr_FR').format(dt);
+      return DateFormat('d MMM yyyy', 'fr_FR').format(DateTime.parse(raw));
     } catch (_) {
-      return dateString;
+      return raw;
     }
   }
 
@@ -271,128 +213,67 @@ class _BricolescreenState extends State<Bricolescreen> {
             flexibleSpace: FlexibleSpaceBar(
               background: Hero(
                 tag: widget.service.id,
-                child:
-                    widget.service.imagePath.isNotEmpty
-                        ? Image.network(
-                          widget.service.imagePath,
-                          fit: BoxFit.cover,
-                          loadingBuilder: (ctx, child, prog) {
-                            if (prog == null) return child;
-                            return Center(
-                              child: CircularProgressIndicator(
-                                value:
-                                    prog.expectedTotalBytes != null
-                                        ? prog.cumulativeBytesLoaded /
-                                            prog.expectedTotalBytes!
-                                        : null,
-                              ),
-                            );
-                          },
-                          errorBuilder:
-                              (ctx, err, stack) => Container(
-                                color: Colors.grey[300],
-                                child: const Icon(Icons.broken_image),
-                              ),
-                        )
-                        : Container(color: Colors.grey[300]),
+                child: widget.service.imagePath.isNotEmpty
+                    ? Image.network(widget.service.imagePath, fit: BoxFit.cover)
+                    : Container(color: Colors.grey[300]),
               ),
             ),
             actions: [
-              IconButton(
-                icon: Icon(Icons.more_vert, color: onPrimary),
-                onPressed: _showMoreOptions,
-              ),
+              IconButton(icon: Icon(Icons.more_vert, color: onPrimary), onPressed: _showMoreOptions)
             ],
           ),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.service.name,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(widget.service.name,
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+                _buildInfoRow(Icons.category_outlined,
+                    widget.service.categories.join(' • ')),
+                _buildInfoRow(Icons.location_on_outlined, widget.service.localisation),
+                _buildInfoRow(Icons.calendar_today_outlined,
+                    'Publié le: ${_formatDate(widget.service.date_creation)}'),
+                _buildInfoRow(Icons.event_busy_outlined,
+                    'Expire le: ${_formatDate(widget.service.date_exp)}'),
+                _buildInfoRow(Icons.sell_outlined,
+                    '${widget.service.prix.toStringAsFixed(2)} DA'),
+                const SizedBox(height: 24),
+                Row(children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.phone_outlined),
+                      label: const Text('Appelez-moi'),
+                      onPressed: _callAction,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primary,
+                        foregroundColor: onPrimary,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  _buildInfoRow(
-                    context,
-                    Icons.category_outlined,
-                    widget.service.categories.isNotEmpty
-                        ? widget.service.categories.join(" • ")
-                        : "Non spécifié",
-                  ),
-                  _buildInfoRow(
-                    context,
-                    Icons.location_on_outlined,
-                    widget.service.localisation,
-                  ),
-                  _buildInfoRow(
-                    context,
-                    Icons.calendar_today_outlined,
-                    "Publié le: ${_formatDate(widget.service.date_creation)}",
-                  ),
-                  _buildInfoRow(
-                    context,
-                    Icons.event_busy_outlined,
-                    "Expire le: ${_formatDate(widget.service.date_exp)}",
-                  ),
-                  _buildInfoRow(
-                    context,
-                    Icons.sell_outlined,
-                    "${widget.service.prix.toStringAsFixed(2)} DA",
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          icon: const Icon(Icons.phone_outlined),
-                          label: const Text("Appelez-moi"),
-                          onPressed: _callAction,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: primary,
-                            foregroundColor: onPrimary,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.message_outlined),
+                      label: const Text('Message'),
+                      onPressed: _messageAction,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey[300],
+                        foregroundColor: Colors.black87,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          icon: const Icon(Icons.message_outlined),
-                          label: const Text("Message"),
-                          onPressed: _messageAction,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey[300],
-                            foregroundColor: Colors.black87,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    "Description",
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    "Aucune description détaillée fournie pour ce service.",
-                  ),
-                ],
-              ),
+                ]),
+                const SizedBox(height: 24),
+                Text('Description',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                Text(widget.service.name ?? 'Pas de description détaillée'),
+              ]),
             ),
           ),
         ],

@@ -48,7 +48,7 @@ class _AddAnnoOutilState extends State<AddAnnoOutil> {
     final user = AuthService.currentUser;
     if (user != null) {
       _phoneCtrl.text = user.phone;
-      _mailCtrl.text = user.email;
+      _mailCtrl.text = user.id;
     }
   }
 
@@ -134,7 +134,7 @@ class _AddAnnoOutilState extends State<AddAnnoOutil> {
           ..fields['description'] = _descriptionCtrl.text
           ..fields['date_creation'] = _dateCtrl.text
           ..fields['phone'] = _phoneCtrl.text
-          ..fields['mail'] = _mailCtrl.text;
+          ..fields['idc'] = _mailCtrl.text;
 
     for (var img in _images) {
       req.files.add(await http.MultipartFile.fromPath('photo', img.path));
