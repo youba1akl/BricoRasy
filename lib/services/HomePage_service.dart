@@ -5,9 +5,10 @@ import 'package:bricorasy/models/bricole_service.dart';
 import 'package:bricorasy/models/professional_service.dart';
 import 'package:bricorasy/models/dummy_tool.dart';
 import 'package:bricorasy/services/auth_services.dart'; // ← on importe AuthService
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class apiservice {
-  static const _baseUrl = 'http://10.0.2.2:5000';
+  static final _baseUrl = dotenv.env['API_BASE_URL']!;
 
   static Future<List<BricoleService>> fetchServices() async {
     final uri = Uri.parse('$_baseUrl/api/annonce/bricole');
@@ -27,8 +28,7 @@ class apiservice {
 }
 
 class apiService_pro {
-  static const _baseUrl = 'http://10.0.2.2:5000';
-
+  static final _baseUrl = dotenv.env['API_BASE_URL']!;
   static Future<List<ProfessionalService>> fetchServicePro() async {
     final uri = Uri.parse('$_baseUrl/api/annonce/professionnel');
     final response = await http.get(
@@ -47,8 +47,7 @@ class apiService_pro {
 }
 
 class apiService_outil {
-  static const _baseUrl = 'http://10.0.2.2:5000';
-
+  static final _baseUrl = dotenv.env['API_BASE_URL']!;
   static Future<List<DummyTool>> fetchTools() async {
     final uri = Uri.parse('$_baseUrl/api/annonce/outil');
     final response = await http.get(

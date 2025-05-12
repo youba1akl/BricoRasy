@@ -1,3 +1,5 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class DummyTool {
   final String id;
   final String localisation;
@@ -26,6 +28,8 @@ class DummyTool {
   });
 
   factory DummyTool.fromJson(Map<String, dynamic> json) {
+        final String apiBaseUrl = dotenv.env['API_BASE_URL']!;
+
     // Safely parse fields that may be null
     final String id = json['_id'] as String? ?? '';
     final String name = json['titre'] as String? ?? '';
@@ -54,7 +58,7 @@ class DummyTool {
     if (json['photo'] is List) {
       final photos = (json['photo'] as List).whereType<String>().toList();
       if (photos.isNotEmpty) {
-        imgUrl = 'http://10.0.2.2:5000/uploads/${photos.first}';
+        imgUrl = '$apiBaseUrl/uploads/${photos.first}';
       }
     }
 

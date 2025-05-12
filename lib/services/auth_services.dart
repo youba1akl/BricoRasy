@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 
 // Assuming Welcomescreen is your initial screen after logout
 import 'package:bricorasy/screens/sign_page/welcome-screen.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // --- Helper Model for Logged-In User Data ---
 class LoggedInUser {
@@ -57,7 +58,7 @@ class LoggedInUser {
 // --- End of Helper Model ---
 
 class AuthService {
-  static const String baseUrl = "http://192.168.43.224:5000";
+  static final String baseUrl = dotenv.env['API_BASE_URL']!;
   static LoggedInUser? currentUser;
   static String? _jwtToken;
 
@@ -78,7 +79,6 @@ class AuthService {
       if (kDebugMode) {
         print(
           "AuthService: User set - ID: ${currentUser!.id}, Name: ${currentUser!.fullname}",
-       
         );
       }
     } catch (e) {

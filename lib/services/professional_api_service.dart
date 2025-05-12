@@ -2,9 +2,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:bricorasy/models/professional_service.dart'; // Adjust path if needed
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 // Ensure this constant is defined, perhaps in a shared config file
-const String API_BASE_URL = "http://127.0.0.1:5000";
+ final API_BASE_URL =  dotenv.env['API_BASE_URL']!;
 
 class ProfessionalApiService {
   Future<ProfessionalService> fetchProfessionalServiceById(String serviceId) async {

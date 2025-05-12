@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class BricoleService {
   final String id;
@@ -29,6 +30,7 @@ class BricoleService {
 
   factory BricoleService.fromJson(Map<String, dynamic> json) {
     // parse price
+    final String apiBaseUrl = dotenv.env['API_BASE_URL']!;
     double prixValue;
     final rawPrix = json['prix'];
     if (rawPrix is num) {
@@ -43,9 +45,7 @@ class BricoleService {
     // build image URL
     final List<dynamic> rawPhotos = json['photo'] as List<dynamic>;
     final String imgUrl =
-        rawPhotos.isNotEmpty
-            ? 'http://10.0.2.2:5000/uploads/${rawPhotos.first}'
-            : '';
+        rawPhotos.isNotEmpty ? '$apiBaseUrl/uploads/${rawPhotos.first}' : '';
 
     return BricoleService(
       id: json['_id'] as String,

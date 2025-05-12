@@ -7,7 +7,9 @@ import 'package:bricorasy/models/bricole_service.dart';
 import 'package:bricorasy/models/professional_service.dart';
 import 'package:bricorasy/models/dummy_tool.dart'; // or your Outil model
 
-const String _baseUrl = 'http://127.0.0.1:5000/api/annonce';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+final String _baseUrl = dotenv.env['API_BASE_URL']!;
 
 class AnnonceService {
   static Future<List<BricoleService>> fetchBricole() async {

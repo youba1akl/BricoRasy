@@ -4,9 +4,11 @@ import 'package:bricorasy/theme/theme.dart' as app_theme;
 import 'package:bricorasy/screens/sign_page/welcome-screen.dart'; // Your initial screen
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Good practice
+  await dotenv.load(fileName: ".env"); 
   runApp(
     ChangeNotifierProvider(
       create: (_) => ThemeProvider(),

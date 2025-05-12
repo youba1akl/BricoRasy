@@ -8,6 +8,9 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+final String API_BASE_URL = dotenv.env['API_BASE_URL']!;
 
 class FormSignUp extends StatefulWidget {
   final String role, fullname, email, password;
@@ -129,7 +132,7 @@ class _FormSignUpState extends State<FormSignUp> {
   }
 
   Future<void> _signupUser() async {
-    final url = Uri.parse('http://192.168.43.224:5000/api/users/register');
+    final url = Uri.parse('$API_BASE_URL/api/users/register');
 
     try {
       final response = await http.post(

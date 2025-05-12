@@ -14,10 +14,12 @@ import '../../widgets/tarif_custom.dart';
 import 'package:bricorasy/services/auth_services.dart';
 import 'package:bricorasy/services/socket_service.dart';
 import 'package:bricorasy/screens/personnel_page/chat-screen.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 
 enum ProfileView { postes, avis }
 
-const String API_BASE_URL = "http://10.0.2.2:5000";
+final String API_BASE_URL = dotenv.env['API_BASE_URL']!;
 
 class Artisanprofilscreen extends StatefulWidget {
   final Artisan artisan;

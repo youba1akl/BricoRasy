@@ -1,3 +1,5 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class ProfessionalService {
   final String id;
   final String name;
@@ -26,6 +28,8 @@ class ProfessionalService {
   });
 
   factory ProfessionalService.fromJson(Map<String, dynamic> json) {
+    final String apiBaseUrl = dotenv.env['API_BASE_URL']!;
+
     String safeString(dynamic v) => v?.toString() ?? '';
 
     final id = safeString(json['id'] ?? json['_id']);
@@ -52,9 +56,7 @@ class ProfessionalService {
     // photos → first URL
     final List<dynamic> rawPhotos = json['photo'] as List<dynamic>;
     final imagePath =
-        rawPhotos.isNotEmpty
-            ? 'http://10.0.2.2:5000/uploads/${rawPhotos.first}'
-            : '';
+        rawPhotos.isNotEmpty ? '$apiBaseUrl/uploads/${rawPhotos.first}' : '';
 
     // types → categories
     final List<String> categories =

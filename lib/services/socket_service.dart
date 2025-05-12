@@ -1,6 +1,7 @@
 // lib/services/socket_service.dart
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:bricorasy/services/auth_services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class SocketService {
   static IO.Socket? _socket;
@@ -9,8 +10,9 @@ class SocketService {
   static IO.Socket get socket {
     if (_socket == null) {
       final token = AuthService.token;
+      final url = dotenv.env['API_BASE_URL'] ?? '';
       _socket = IO.io(
-        'http://10.0.2.2:5000',
+        url,
         IO.OptionBuilder()
             .setTransports(['websocket'])
             .enableAutoConnect()

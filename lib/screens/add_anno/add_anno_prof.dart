@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:bricorasy/services/auth_services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class AddAnnoProf extends StatefulWidget {
   const AddAnnoProf({super.key});
@@ -142,6 +143,8 @@ class _AddAnnoProfState extends State<AddAnnoProf> {
     );
   }
 
+  final String apiBaseUrl = dotenv.env['API_BASE_URL']!;
+
   Future<void> _submitForm() async {
     FocusScope.of(context).unfocus();
     if (!_formKey.currentState!.validate()) return;
@@ -156,7 +159,7 @@ class _AddAnnoProfState extends State<AddAnnoProf> {
     }
 
     setState(() => _submitting = true);
-    final uri = Uri.parse('http://10.0.2.2:5000/api/annonce/professionnel');
+    final uri = Uri.parse('$apiBaseUrl/api/annonce/professionnel');
     final req =
         http.MultipartRequest('POST', uri)
           ..headers.addAll(AuthService.authHeader)

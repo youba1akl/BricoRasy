@@ -43,7 +43,7 @@ dependencies:
   provider: ^6.0.0 # Or latest version, for state management
   shared_preferences: ^2.0.0 # Or latest version, for persistence
   socket_io_client: ^3.1.2
-
+  flutter_dotenv: ^5.0.2 
 
 dev_dependencies:
   flutter_test:
@@ -70,6 +70,7 @@ flutter:
   assets:
     - assets/images/
     - assets/json/
+    - .env
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
