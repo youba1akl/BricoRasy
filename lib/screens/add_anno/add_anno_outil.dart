@@ -111,18 +111,10 @@ class _AddAnnoOutilState extends State<AddAnnoOutil> {
       );
       return;
     }
-    if (_images.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Veuillez ajouter au moins une image.'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      return;
-    }
+
 
     setState(() => _submitting = true);
-    final uri = Uri.parse('http://10.0.2.2:5000/api/annonce/outil');
+    final uri = Uri.parse('http://127.0.0.1:5000/api/annonce/outil');
     final req =
         http.MultipartRequest('POST', uri)
           ..headers.addAll(AuthService.authHeader)

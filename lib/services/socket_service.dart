@@ -10,7 +10,7 @@ class SocketService {
     if (_socket == null) {
       final token = AuthService.token;
       _socket = IO.io(
-        'http://10.0.2.2:5000',
+        'http://127.0.0.1:5000',
         IO.OptionBuilder()
             .setTransports(['websocket'])
             .enableAutoConnect()

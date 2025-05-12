@@ -156,7 +156,7 @@ class _AddAnnoProfState extends State<AddAnnoProf> {
     }
 
     setState(() => _submitting = true);
-    final uri = Uri.parse('http://10.0.2.2:5000/api/annonce/professionnel');
+    final uri = Uri.parse('http://127.0.0.1:5000/api/annonce/professionnel');
     final req =
         http.MultipartRequest('POST', uri)
           ..headers.addAll(AuthService.authHeader)

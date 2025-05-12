@@ -1,5 +1,19 @@
 const mongoose = require("mongoose");
 
+const tarifItemSchema = new mongoose.Schema({
+  serviceName: {
+    type: String,
+    required: [true, "Le nom du service est obligatoire pour un tarif."],
+    trim: true,
+  },
+  price: { // Can be a range like "1000 - 2000 DA" or "Contactez-moi"
+    type: String,
+    required: [true, "Le prix/tarif est obligatoire."],
+    trim: true,
+  }
+  // Mongoose adds _id to subdocuments by default, which is fine.
+});
+
 const userSchema = new mongoose.Schema(
   {
     fullname: {
@@ -44,6 +58,7 @@ const userSchema = new mongoose.Schema(
       enum: ["Homme", "Femme"],
       required: true,
     },
+  tarifs: [tarifItemSchema],
 
     // Champs spécifiques à l'artisan
     services: [

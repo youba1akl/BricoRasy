@@ -1,5 +1,5 @@
 // lib/models/artisan.model.dart
-
+import 'package:bricorasy/models/tarif_item.model.dart';
 class Artisan {
   final String? id; // Optional: Corresponds to backend's _id for the User acting as Artisan
   final String fullname;
@@ -8,7 +8,8 @@ class Artisan {
   final String numTel;     // This maps to 'phone' from User model
   final String rating;     // This might be an aggregated value or a placeholder from your data
   final String image;      // This maps to 'profilePicture' or 'photo' from User model
-  final String like;       // This might be an aggregated value or a placeholder
+  final String like;
+  final List<TarifItem> tarifs;       // This might be an aggregated value or a placeholder
 
   Artisan({
     this.id,
@@ -19,6 +20,7 @@ class Artisan {
     required this.rating,
     required this.image, // Can be an empty string if no image
     required this.like,
+    this.tarifs = const [],
   });
 
   // --- Helper static methods for JSON parsing ---
@@ -39,28 +41,35 @@ class Artisan {
   // --- End of Helper static methods ---
 
   factory Artisan.fromJson(Map<String, dynamic> json) {
+    List<TarifItem> parsedTarifs = [];
+    if (json['tarifs'] != null && json['tarifs'] is List) {
+      parsedTarifs = (json['tarifs'] as List)
+          .map((item) => TarifItem.fromJson(item as Map<String, dynamic>))
+          .toList();
+    }
+
     return Artisan(
-      id: _getString(json['_id']), // From User model's _id
+      id: _getString(json['_id']),
       fullname: _getString(json['fullname'], 'Nom Inconnu'),
       job: _getString(json['job'], 'Profession non spécifiée'),
       localisation: _getStringFromKeys(json, ['localisation', 'adress'], 'Lieu inconnu'),
-      // User model sends 'phone', map it to numTel
-      numTel: _getStringFromKeys(json, ['phone', 'numTel']), // Prioritize 'phone' from User model
-      rating: json['rating']?.toString() ?? 'N/A', // Ensure it's a string, default 'N/A'
-      image: _getStringFromKeys(json, ['profilePicture', 'photo', 'image']), // Prioritize specific, then generic
-      like: json['like']?.toString() ?? '0', // Ensure it's a string, default '0'
+      numTel: _getStringFromKeys(json, ['phone', 'numTel']),
+      rating: json['rating']?.toString() ?? 'N/A',
+      image: _getStringFromKeys(json, ['profilePicture', 'photo', 'image']),
+      like: json['like']?.toString() ?? '0',
+      tarifs: parsedTarifs, // <-- PARSE TARIFS
     );
   }
 
   Map<String, dynamic> toJson() => {
-        if (id != null && id!.isNotEmpty) '_id': id, // Only include if not null or empty
+        if (id != null && id!.isNotEmpty) '_id': id,
         'fullname': fullname,
         'job': job,
         'localisation': localisation,
-        // When sending back to an endpoint expecting User model fields:
-        'phone': numTel, // Map numTel back to 'phone'
+        'phone': numTel, // Map back to User schema field name
         'rating': rating,
-        'profilePicture': image, // Map image back to 'profilePicture' (or 'photo')
+        'profilePicture': image, // Map back to User schema field name
         'like': like,
+        'tarifs': tarifs.map((tarif) => tarif.toJson()).toList(), // <-- SERIALIZE TARIFS
       };
 }

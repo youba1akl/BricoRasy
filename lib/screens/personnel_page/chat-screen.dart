@@ -7,7 +7,7 @@ import 'package:socket_io_client/socket_io_client.dart';
 import 'package:bricorasy/services/auth_services.dart';
 import 'package:bricorasy/services/socket_service.dart';
 
-const String API_BASE_URL = "http://10.0.2.2:5000";
+const String API_BASE_URL = "http://127.0.0.1:5000";
 
 class Chatscreen extends StatefulWidget {
   final String username;

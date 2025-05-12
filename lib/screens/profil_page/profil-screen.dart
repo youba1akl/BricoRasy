@@ -281,11 +281,7 @@ class _ProfilscreenState extends State<Profilscreen> {
                         ),
                       ),
                     ),
-                    _buildSettingsItem(Icons.bookmark_border_outlined, 'Listes Sauvegardées', () {
-                       ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Écran 'Listes Sauvegardées' à implémenter.")),
-                        );
-                    }),
+
                     const SizedBox(height: 16),
                     _buildSectionTitle('Ressources'),
                     _buildSettingsItem(Icons.menu_book_outlined, 'Catalogue de Prix', () {
